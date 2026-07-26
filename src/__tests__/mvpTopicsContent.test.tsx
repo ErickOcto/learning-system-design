@@ -31,7 +31,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including Rate Limiting Resiliency', () => {
+  it('contains authored text content for all MVP topics including Load Balancer vs Reverse Proxy', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -44,6 +44,7 @@ describe('Content Authoring: MVP Topics', () => {
       'consistency-patterns',
       'load-leveling',
       'resiliency',
+      'lb-vs-proxy',
     ];
 
     mvpKeys.forEach((key) => {
@@ -146,5 +147,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/Rate limiting and throttling algorithms like Token Bucket control the rate/i)).toBeDefined();
     expect(screen.getByText('Stripe API Rate Limiter')).toBeDefined();
     expect(screen.getByText(/Guarantees hard upper limits on incoming request rates/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Load Balancer vs Reverse Proxy topic page', () => {
+    window.history.pushState({}, '', '/networking/lb-vs-proxy');
+    render(<App />);
+
+    expect(screen.getByText(/While Reverse Proxies and Load Balancers often run on the exact same software/i)).toBeDefined();
+    expect(screen.getByText('NGINX as Edge Reverse Proxy')).toBeDefined();
+    expect(screen.getByText(/Reverse proxies obscure internal server topology/i)).toBeDefined();
   });
 });
