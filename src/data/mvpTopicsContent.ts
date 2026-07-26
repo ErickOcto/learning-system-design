@@ -1,6 +1,7 @@
 import { TopicPageProps } from '../types/topic';
 import LoadBalancerVisualizer from '../components/visualizers/LoadBalancerVisualizer';
 import ScalingVisualizer from '../components/visualizers/ScalingVisualizer';
+import CachingVisualizer from '../components/visualizers/CachingVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -114,6 +115,7 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
         'Do not cache rapidly changing, highly transactional data where stale reads cause business financial errors (e.g. real-time bank account balances).',
     },
     relatedTopicIds: ['/data/sharding', '/foundations/latency-vs-throughput', '/caching/layers'],
+    Visualizer: CachingVisualizer,
   },
 
   'sharding': {
