@@ -1,8 +1,10 @@
 import { useLocation } from 'react-router-dom';
 import { findRouteByPath, VizType } from '../data/curriculum';
+import { getMvpTopicContent } from '../data/mvpTopicsContent';
+import TopicPageLayout from '../components/topic/TopicPageLayout';
+import ResourceLibrary from '../components/resources/ResourceLibrary';
 import { PlayCircle, BarChart2, FileText, ArrowRight } from 'lucide-react';
 import { useTopicStore } from '../store/useTopicStore';
-import ResourceLibrary from '../components/resources/ResourceLibrary';
 
 export default function TopicPlaceholderPage() {
   const location = useLocation();
@@ -18,6 +20,13 @@ export default function TopicPlaceholderPage() {
         </p>
       </div>
     );
+  }
+
+  // If topic is one of the 5 MVP topics, render full TopicPageLayout with authored text
+  const mvpContent = getMvpTopicContent(route.id);
+
+  if (mvpContent) {
+    return <TopicPageLayout {...mvpContent} />;
   }
 
   const topicRecord = topicStore.getTopicRecord(route.id);

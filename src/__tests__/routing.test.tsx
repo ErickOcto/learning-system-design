@@ -31,9 +31,8 @@ describe('Core App Layout & Routing', () => {
     // Route title in content area
     expect(screen.getAllByText('Horizontal vs. Vertical Scaling').length).toBeGreaterThan(0);
 
-    // Breadcrumb updates
+    // Breadcrumb & Group Header updates
     expect(screen.getAllByText('1. Foundations').length).toBeGreaterThan(0);
-    expect(screen.getByText('ROUTE: /foundations/scaling')).toBeDefined();
   });
 
   it('contains all ~28 curriculum route definitions', () => {
