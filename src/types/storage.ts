@@ -22,6 +22,17 @@ export interface UserDataExport {
   topics: Record<string, UserTopicRecord>;
 }
 
+export interface SavedArchitecture {
+  id: string;
+  name: string;
+  createdAt: string;
+  updatedAt: string;
+  graph: {
+    nodes: any[];
+    edges: any[];
+  };
+}
+
 export interface StorageAdapter {
   getAll(): Promise<UserDataExport>;
   getTopic(topicId: string): Promise<UserTopicRecord | null>;
@@ -29,4 +40,9 @@ export interface StorageAdapter {
   exportAll(): Promise<string>;      // JSON string
   importAll(json: string): Promise<void>;
   clear(): Promise<void>;
+
+  // Playground Architecture Persistence
+  getSavedArchitectures(): Promise<SavedArchitecture[]>;
+  saveArchitecture(arch: SavedArchitecture): Promise<void>;
+  deleteArchitecture(id: string): Promise<void>;
 }

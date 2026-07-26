@@ -4,11 +4,16 @@ import PlaygroundPalette from '../components/playground/PlaygroundPalette';
 import PlaygroundCanvas from '../components/playground/PlaygroundCanvas';
 import PlaygroundControlsBar from '../components/playground/PlaygroundControlsBar';
 import PlaygroundConfigDrawer from '../components/playground/PlaygroundConfigDrawer';
+import PlaygroundPersistenceModal from '../components/playground/PlaygroundPersistenceModal';
 import { PlaygroundNodeData } from '../components/playground/types';
-import { Cpu } from 'lucide-react';
+import { Cpu, FolderOpen } from 'lucide-react';
 
 function PlaygroundPageContent() {
   const [selectedNode, setSelectedNode] = useState<Node<PlaygroundNodeData> | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [currentNodes, setCurrentNodes] = useState<any[]>([]);
+  const [currentEdges, setCurrentEdges] = useState<any[]>([]);
+  const [loadedGraph, setLoadedGraph] = useState<{ nodes: any[]; edges: any[] } | null>(null);
 
   const handleUpdateNodeData = (nodeId: string, newData: Partial<PlaygroundNodeData>) => {
     setSelectedNode((prev) => {
@@ -21,6 +26,15 @@ function PlaygroundPageContent() {
         },
       };
     });
+  };
+
+  const handleNodesEdgesChange = (nodes: any[], edges: any[]) => {
+    setCurrentNodes(nodes);
+    setCurrentEdges(edges);
+  };
+
+  const handleLoadArchitecture = (nodes: any[], edges: any[]) => {
+    setLoadedGraph({ nodes, edges });
   };
 
   return (
@@ -70,8 +84,31 @@ function PlaygroundPageContent() {
               border: '1px solid var(--color-border-subtle)',
             }}
           >
-            Core Nodes v1
+            Persistence v1
           </span>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.3rem 0.75rem',
+              borderRadius: 'var(--radius-sm)',
+              backgroundColor: 'var(--color-bg-elevated)',
+              border: '1px solid var(--color-border-subtle)',
+              color: 'var(--color-text-primary)',
+              fontFamily: 'var(--font-heading)',
+              fontSize: 'var(--font-size-xs)',
+              fontWeight: 600,
+              cursor: 'pointer',
+            }}
+          >
+            <FolderOpen size={14} style={{ color: 'var(--color-accent-primary)' }} />
+            Saved Architectures
+          </button>
         </div>
       </div>
 
@@ -83,7 +120,11 @@ function PlaygroundPageContent() {
         <PlaygroundPalette />
 
         <div style={{ flex: 1, position: 'relative' }}>
-          <PlaygroundCanvas onSelectNode={setSelectedNode} />
+          <PlaygroundCanvas
+            onSelectNode={setSelectedNode}
+            onNodesEdgesChange={handleNodesEdgesChange}
+            loadedGraph={loadedGraph}
+          />
         </div>
 
         {selectedNode && (
@@ -94,6 +135,15 @@ function PlaygroundPageContent() {
           />
         )}
       </div>
+
+      {/* Persistence Modal */}
+      <PlaygroundPersistenceModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        currentNodes={currentNodes}
+        currentEdges={currentEdges}
+        onLoadArchitecture={handleLoadArchitecture}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useEffect } from 'react';
 import {
   ReactFlow,
   Background,
@@ -86,15 +86,34 @@ let idCounter = 1;
 
 interface PlaygroundCanvasProps {
   onSelectNode: (node: Node<PlaygroundNodeData> | null) => void;
+  onNodesEdgesChange?: (nodes: any[], edges: any[]) => void;
+  loadedGraph?: { nodes: any[]; edges: any[] } | null;
 }
 
 export default function PlaygroundCanvas({
   onSelectNode,
+  onNodesEdgesChange,
+  loadedGraph,
 }: PlaygroundCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-  const [warningMsg, setWarningMsg] = useState<string | null>(null);
+  const [warningMsg, setWarningMsg] = React.useState<string | null>(null);
   const { screenToFlowPosition } = useReactFlow();
+
+  // Handle external loaded graph
+  useEffect(() => {
+    if (loadedGraph) {
+      setNodes(loadedGraph.nodes || []);
+      setEdges(loadedGraph.edges || []);
+    }
+  }, [loadedGraph, setNodes, setEdges]);
+
+  // Sync current nodes & edges with parent page for persistence
+  useEffect(() => {
+    if (onNodesEdgesChange) {
+      onNodesEdgesChange(nodes, edges);
+    }
+  }, [nodes, edges, onNodesEdgesChange]);
 
   // Run simulation tick loop
   useSimulationLoop(nodes, edges);
@@ -203,7 +222,6 @@ export default function PlaygroundCanvas({
 
   return (
     <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--color-bg-base)', position: 'relative' }} onDragOver={onDragOver} onDrop={onDrop}>
-      {/* Warning banner for invalid connection attempts */}
       {warningMsg && (
         <div
           style={{
