@@ -31,7 +31,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including Circuit Breakers', () => {
+  it('contains authored text content for all MVP topics including Microservices', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -46,6 +46,7 @@ describe('Content Authoring: MVP Topics', () => {
       'resiliency',
       'lb-vs-proxy',
       'resiliency-advanced',
+      'microservices',
     ];
 
     mvpKeys.forEach((key) => {
@@ -166,5 +167,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/Circuit Breakers and Bulkhead patterns prevent localized component failures/i)).toBeDefined();
     expect(screen.getByText('Netflix Hystrix / Resilience4j')).toBeDefined();
     expect(screen.getByText(/Eliminates cascading failures by insulating healthy microservice thread pools/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Microservices & Blast Radius topic page', () => {
+    window.history.pushState({}, '', '/architecture/microservices');
+    render(<App />);
+
+    expect(screen.getByText(/System architecture dictates the "Blast Radius" of a component failure/i)).toBeDefined();
+    expect(screen.getByText('Amazon Monolith to Distributed Services')).toBeDefined();
+    expect(screen.getByText(/Drastically reduces failure blast radius by isolating faults/i)).toBeDefined();
   });
 });

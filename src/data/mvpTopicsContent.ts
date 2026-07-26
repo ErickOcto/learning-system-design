@@ -12,6 +12,7 @@ import LoadLevelingVisualizer from '../components/visualizers/LoadLevelingVisual
 import TokenBucketVisualizer from '../components/visualizers/TokenBucketVisualizer';
 import LbVsProxyVisualizer from '../components/visualizers/LbVsProxyVisualizer';
 import CircuitBreakerVisualizer from '../components/visualizers/CircuitBreakerVisualizer';
+import MicroservicesVisualizer from '../components/visualizers/MicroservicesVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -506,6 +507,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/availability/resiliency', '/availability/cap-theorem', '/availability/nines'],
     Visualizer: CircuitBreakerVisualizer,
+  },
+
+  'microservices': {
+    topicId: 'microservices',
+    title: 'Microservices & Blast Radius Isolation',
+    group: '7. System Architecture & Patterns',
+    explanation:
+      'System architecture dictates the "Blast Radius" of a component failure. In a monolithic architecture, all application modules (User, Order, Payment, Inventory) share a single operating process and database connection pool; an unhandled exception or database crash in one module (e.g. User DB) crashes the entire process (100% total outage, Blast Radius = 4/4 down). In a microservices architecture, services run in independent containers with isolated database boundaries; a failure in the User service is strictly contained (Blast Radius = 25% down), allowing Order, Payment, and Inventory services to continue functioning with graceful degradation.',
+    realWorldExamples: [
+      {
+        name: 'Amazon Monolith to Distributed Services',
+        description: 'Migrating the Obidos monolithic C++ executable into decoupled SOA microservices to stop single-module site crashes.',
+      },
+      {
+        name: 'Netflix Microservices Architecture',
+        description: 'Over 1,000 independent microservices running in AWS containers with automated cell-based fault isolation.',
+      },
+      {
+        name: 'Uber Domain-Driven Services (DOMA)',
+        description: 'Grouped microservice domains bounded by domain-level database isolation.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Drastically reduces failure blast radius by isolating faults within single microservice boundaries',
+        'Enables independent scaling, deployment, and tech stack choices per team',
+        'Prevents single-module memory leaks or DB crashes from downing unrelated core features',
+      ],
+      cons: [
+        'Introduces network RPC latency and inter-service network serialization overhead',
+        'Requires complex distributed transaction management (Saga pattern) instead of ACID SQL joins',
+        'Significantly increases operational deployment and observability overhead (Kubernetes, Service Mesh)',
+      ],
+      whenNotToUse:
+        'Do not build a complex multi-repo microservices architecture for early-stage startup MVPs where domain boundaries are fluid and operational overhead distracts from product velocity.',
+    },
+    relatedTopicIds: ['/availability/resiliency-advanced', '/foundations/scaling', '/networking/lb-vs-proxy'],
+    Visualizer: MicroservicesVisualizer,
   },
 };
 
