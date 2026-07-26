@@ -1,7 +1,7 @@
 import { TopicPageProps } from '../types/topic';
+import LoadBalancerVisualizer from '../components/visualizers/LoadBalancerVisualizer';
 
-export const MVP_TOPICS_CONTENT: Record<string, Omit<TopicPageProps, 'Visualizer'>> = {
-  // Keyed by route ID or path
+export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
     topicId: 'scaling',
     title: 'Horizontal vs. Vertical Scaling',
@@ -74,6 +74,7 @@ export const MVP_TOPICS_CONTENT: Record<string, Omit<TopicPageProps, 'Visualizer
         'Avoid placing dedicated load balancing layers in front of monolithic single-node architectures with low static traffic where direct routing suffices.',
     },
     relatedTopicIds: ['/foundations/scaling', '/networking/cdn', '/availability/resiliency'],
+    Visualizer: LoadBalancerVisualizer,
   },
 
   'cache-strategies': {

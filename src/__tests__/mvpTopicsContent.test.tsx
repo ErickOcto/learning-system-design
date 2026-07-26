@@ -1,12 +1,30 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
-import { render, screen, cleanup } from '@testing-library/react';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { render, screen, cleanup, act } from '@testing-library/react';
 import 'fake-indexeddb/auto';
 import App from '../App';
 import { MVP_TOPICS_CONTENT } from '../data/mvpTopicsContent';
 
 describe('Content Authoring: MVP Topics', () => {
   beforeEach(() => {
+    cleanup();
+    HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+      clearRect: vi.fn(),
+      beginPath: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+      fillText: vi.fn(),
+      lineTo: vi.fn(),
+      moveTo: vi.fn(),
+      roundRect: vi.fn(),
+    }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+  });
+
+  afterEach(async () => {
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    });
     cleanup();
   });
 
@@ -47,6 +65,15 @@ describe('Content Authoring: MVP Topics', () => {
 
     // § 6 My Resources
     expect(screen.getByText(/§ 6 — My Resources/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Load Balancers topic page with particle visualizer', () => {
+    window.history.pushState({}, '', '/networking/load-balancers');
+    render(<App />);
+
+    expect(screen.getByText(/A load balancer acts as a reverse proxy traffic director/i)).toBeDefined();
+    expect(screen.getByText('AWS Application Load Balancer')).toBeDefined();
+    expect(screen.getByText(/Eliminates single point of server failure/i)).toBeDefined();
   });
 
   it('renders complete 6-section layout for Caching Strategies topic page', () => {
