@@ -31,7 +31,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including Load Balancer vs Reverse Proxy', () => {
+  it('contains authored text content for all MVP topics including Circuit Breakers', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -45,6 +45,7 @@ describe('Content Authoring: MVP Topics', () => {
       'load-leveling',
       'resiliency',
       'lb-vs-proxy',
+      'resiliency-advanced',
     ];
 
     mvpKeys.forEach((key) => {
@@ -156,5 +157,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/While Reverse Proxies and Load Balancers often run on the exact same software/i)).toBeDefined();
     expect(screen.getByText('NGINX as Edge Reverse Proxy')).toBeDefined();
     expect(screen.getByText(/Reverse proxies obscure internal server topology/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Circuit Breaker Resiliency Advanced topic page', () => {
+    window.history.pushState({}, '', '/availability/resiliency-advanced');
+    render(<App />);
+
+    expect(screen.getByText(/Circuit Breakers and Bulkhead patterns prevent localized component failures/i)).toBeDefined();
+    expect(screen.getByText('Netflix Hystrix / Resilience4j')).toBeDefined();
+    expect(screen.getByText(/Eliminates cascading failures by insulating healthy microservice thread pools/i)).toBeDefined();
   });
 });
