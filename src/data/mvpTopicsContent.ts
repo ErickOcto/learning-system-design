@@ -11,6 +11,7 @@ import ConsistencyVisualizer from '../components/visualizers/ConsistencyVisualiz
 import LoadLevelingVisualizer from '../components/visualizers/LoadLevelingVisualizer';
 import TokenBucketVisualizer from '../components/visualizers/TokenBucketVisualizer';
 import LbVsProxyVisualizer from '../components/visualizers/LbVsProxyVisualizer';
+import CircuitBreakerVisualizer from '../components/visualizers/CircuitBreakerVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -467,6 +468,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/networking/load-balancers', '/networking/cdn', '/foundations/scaling'],
     Visualizer: LbVsProxyVisualizer,
+  },
+
+  'resiliency-advanced': {
+    topicId: 'resiliency-advanced',
+    title: 'Circuit Breaker & Bulkhead Thread Isolation',
+    group: '2. Availability & Consistency',
+    explanation:
+      'Circuit Breakers and Bulkhead patterns prevent localized component failures from cascading into system-wide outages. A Circuit Breaker monitors downstream microservices; when consecutive failures cross a threshold (N failures), the circuit trips to OPEN, instantly failing-fast subsequent requests (HTTP 503) without waiting for downstream timeouts. A Bulkhead partitions system resources (thread pools or worker queues) into isolated pools so a slow or failing service (e.g. Recommendations) cannot exhaust shared threads and freeze healthy services (e.g. Payment and Inventory).',
+    realWorldExamples: [
+      {
+        name: 'Netflix Hystrix / Resilience4j',
+        description: 'Isolated thread pool bulkheads and circuit breakers protecting microservice IPC across thousands of instances.',
+      },
+      {
+        name: 'Istio Service Mesh Envoy Circuit Breakers',
+        description: 'Outlier detection tripping circuit breakers at the sidecar proxy level to eject failing pods.',
+      },
+      {
+        name: 'Amazon Prime Day Isolation Bulkheads',
+        description: 'Segregating checkout payment execution threads from product recommendation recommendation compute pools.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Eliminates cascading failures by insulating healthy microservice thread pools from failing dependencies',
+        'Provides instant fail-fast (HTTP 503) responses, freeing up upstream client threads immediately',
+        'Auto-recovers via Half-Open state probes once downstream services heal',
+      ],
+      cons: [
+        'Increases architecture complexity with configurable failure thresholds, recovery timeouts, and thread limits',
+        'Requires fallback handler implementation (e.g. returning cached recommendations or default response)',
+        'Improperly tuned thresholds cause false-positive circuit trips under normal traffic spikes',
+      ],
+      whenNotToUse:
+        'Do not apply aggressive circuit breakers on non-redundant core payment processor APIs where failing fast without retry attempts prevents critical customer checkouts.',
+    },
+    relatedTopicIds: ['/availability/resiliency', '/availability/cap-theorem', '/availability/nines'],
+    Visualizer: CircuitBreakerVisualizer,
   },
 };
 
