@@ -3,6 +3,7 @@ import LoadBalancerVisualizer from '../components/visualizers/LoadBalancerVisual
 import ScalingVisualizer from '../components/visualizers/ScalingVisualizer';
 import CachingVisualizer from '../components/visualizers/CachingVisualizer';
 import ShardingVisualizer from '../components/visualizers/ShardingVisualizer';
+import MessagingVisualizer from '../components/visualizers/MessagingVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -192,6 +193,7 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
         'Do not use asynchronous message queues for synchronous request-response workflows where the user client immediately requires immediate HTTP response data.',
     },
     relatedTopicIds: ['/messaging/load-leveling', '/messaging/background-jobs', '/architecture/microservices'],
+    Visualizer: MessagingVisualizer,
   },
 };
 
