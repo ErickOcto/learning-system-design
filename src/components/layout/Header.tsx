@@ -1,6 +1,8 @@
-import { Link } from 'react-router-dom';
-import { Menu, X, Cpu, Layers, Sparkles } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Menu, X, Cpu, Layers, Sparkles, Search } from 'lucide-react';
 import Breadcrumb from './Breadcrumb';
+import { ALL_CURRICULUM_ROUTES } from '../../data/curriculum';
 
 interface HeaderProps {
   sidebarOpen: boolean;
@@ -8,6 +10,17 @@ interface HeaderProps {
 }
 
 export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const filteredRoutes = ALL_CURRICULUM_ROUTES.filter(
+    (r) =>
+      r.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.topicsCovered.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.path.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <header
       style={{
@@ -84,6 +97,77 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         <div style={{ marginLeft: '1.5rem', borderLeft: '1px solid var(--color-border-subtle)', paddingLeft: '1.5rem' }}>
           <Breadcrumb />
         </div>
+      </div>
+
+      {/* Center Search Input */}
+      <div style={{ position: 'relative', width: '220px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', backgroundColor: 'var(--color-bg-elevated)', border: '1px solid var(--color-border-subtle)', borderRadius: 'var(--radius-sm)', padding: '3px 8px' }}>
+          <Search size={13} style={{ color: 'var(--color-text-muted)', marginRight: '6px' }} />
+          <input
+            type="text"
+            placeholder="Search topics..."
+            value={searchQuery}
+            onFocus={() => setIsSearchOpen(true)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value);
+              setIsSearchOpen(true);
+            }}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-text-primary)',
+              fontFamily: 'var(--font-mono)',
+              fontSize: '11px',
+              outline: 'none',
+              width: '100%',
+            }}
+          />
+        </div>
+
+        {/* Dropdown Results */}
+        {isSearchOpen && searchQuery.trim().length > 0 && (
+          <div
+            style={{
+              position: 'absolute',
+              top: '36px',
+              left: 0,
+              right: 0,
+              backgroundColor: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border-subtle)',
+              borderRadius: 'var(--radius-sm)',
+              boxShadow: 'var(--shadow-lg)',
+              maxHeight: '260px',
+              overflowY: 'auto',
+              zIndex: 50,
+            }}
+          >
+            {filteredRoutes.length === 0 ? (
+              <div style={{ padding: '8px 12px', fontSize: '11px', color: 'var(--color-text-muted)' }}>No topics match query.</div>
+            ) : (
+              filteredRoutes.map((r) => (
+                <div
+                  key={r.id}
+                  onClick={() => {
+                    navigate(r.path);
+                    setIsSearchOpen(false);
+                    setSearchQuery('');
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    fontSize: '11px',
+                    color: 'var(--color-text-primary)',
+                    cursor: 'pointer',
+                    borderBottom: '1px solid var(--color-border-subtle)',
+                    fontFamily: 'var(--font-mono)',
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>{r.title}</div>
+                  <div style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>{r.topicsCovered}</div>
+                </div>
+              ))
+            )}
+          </div>
+        )}
       </div>
 
       {/* Right section: System Status & Playground Link */}
