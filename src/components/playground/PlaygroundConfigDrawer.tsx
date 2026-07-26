@@ -5,6 +5,8 @@ import {
   PlaygroundNodeData,
   LoadBalancerAlgorithm,
   ClientPattern,
+  DatabaseType,
+  EvictionPolicy,
 } from './types';
 
 interface PlaygroundConfigDrawerProps {
@@ -290,6 +292,140 @@ export default function PlaygroundConfigDrawer({
                 step="50"
                 value={config.processingTimeMs || 200}
                 onChange={(e) => updateConfig({ processingTimeMs: Number(e.target.value) })}
+                style={{ width: '100%', accentColor: 'var(--color-accent-primary)' }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Database-specific settings */}
+        {data.componentType === 'database' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                Database Type
+              </label>
+              <select
+                value={config.dbType || 'primary'}
+                onChange={(e) => updateConfig({ dbType: e.target.value as DatabaseType })}
+                style={{
+                  backgroundColor: 'var(--color-bg-base)',
+                  border: '1px solid var(--color-border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '0.4rem 0.6rem',
+                  color: 'var(--color-text-primary)',
+                  fontSize: 'var(--font-size-xs)',
+                  outline: 'none',
+                }}
+              >
+                <option value="primary">Primary (Read/Write)</option>
+                <option value="replica">Replica (Read-Only)</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Replication Lag (ms)
+                </label>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-accent-primary)' }}>
+                  {config.replicationLagMs || 300} ms
+                </span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="2000"
+                step="50"
+                value={config.replicationLagMs || 300}
+                onChange={(e) => updateConfig({ replicationLagMs: Number(e.target.value) })}
+                style={{ width: '100%', accentColor: 'var(--color-accent-primary)' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Read / Write Ratio
+                </label>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-accent-primary)' }}>
+                  {config.readWriteSplit || 80}% Reads
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={config.readWriteSplit || 80}
+                onChange={(e) => updateConfig({ readWriteSplit: Number(e.target.value) })}
+                style={{ width: '100%', accentColor: 'var(--color-accent-primary)' }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Cache-specific settings */}
+        {data.componentType === 'cache' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Cache Hit Ratio
+                </label>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-status-healthy)' }}>
+                  {config.hitRatio || 70}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={config.hitRatio || 70}
+                onChange={(e) => updateConfig({ hitRatio: Number(e.target.value) })}
+                style={{ width: '100%', accentColor: 'var(--color-status-healthy)' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                Eviction Policy
+              </label>
+              <select
+                value={config.evictionPolicy || 'LRU'}
+                onChange={(e) => updateConfig({ evictionPolicy: e.target.value as EvictionPolicy })}
+                style={{
+                  backgroundColor: 'var(--color-bg-base)',
+                  border: '1px solid var(--color-border-subtle)',
+                  borderRadius: 'var(--radius-sm)',
+                  padding: '0.4rem 0.6rem',
+                  color: 'var(--color-text-primary)',
+                  fontSize: 'var(--font-size-xs)',
+                  outline: 'none',
+                }}
+              >
+                <option value="LRU">LRU (Least Recently Used)</option>
+                <option value="LFU">LFU (Least Frequently Used)</option>
+                <option value="FIFO">FIFO (First In First Out)</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Max Capacity
+                </label>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-accent-primary)' }}>
+                  {config.capacity || 10} items
+                </span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="50"
+                value={config.capacity || 10}
+                onChange={(e) => updateConfig({ capacity: Number(e.target.value) })}
                 style={{ width: '100%', accentColor: 'var(--color-accent-primary)' }}
               />
             </div>
