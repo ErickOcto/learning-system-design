@@ -702,6 +702,154 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     relatedTopicIds: ['/networking/load-balancers', '/messaging/load-leveling', '/networking/lb-vs-proxy'],
     Visualizer: RealtimeCommVisualizer,
   },
+
+  'protocols': {
+    topicId: 'protocols',
+    title: 'Networking Protocols (HTTP/1.1, HTTP/2, HTTP/3, TCP, UDP)',
+    group: '3. Networking & Delivery',
+    explanation:
+      'Modern network communication layers stack from IP (routing) -> TCP/UDP (transport) -> HTTP (application). TCP provides reliable, ordered, byte-stream transmission via a 3-way SYN/SYN-ACK/ACK handshake. UDP trades reliability for raw speed and zero connection latency (used in streaming & WebRTC). HTTP/2 introduced binary framing, multiplexing multiple requests over a single TCP connection, while HTTP/3 runs over QUIC (UDP-based) to solve TCP head-of-line blocking.',
+    realWorldExamples: [
+      {
+        name: 'HTTP/2 Multiplexing in Web Browsers',
+        description: 'Multiplexing hundreds of static assets simultaneously over a single TCP connection.',
+      },
+      {
+        name: 'HTTP/3 QUIC in Google Search & YouTube',
+        description: 'Using QUIC over UDP to eliminate head-of-line blocking latency on mobile networks.',
+      },
+      {
+        name: 'UDP for Voice & Video (Zoom, WebRTC)',
+        description: 'Prioritizing low-latency packet delivery over packet retransmission for live media.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'TCP guarantees zero packet loss and strict byte order delivery',
+        'HTTP/2 multiplexing eliminates browser 6-connection limits',
+        'HTTP/3 QUIC provides fast 0-RTT connection establishment',
+      ],
+      cons: [
+        'TCP 3-way handshake adds latency overhead on new connections',
+        'TCP head-of-line blocking delays all streams if a single packet drops',
+        'UDP requires application-level packet loss handling',
+      ],
+      whenNotToUse:
+        'Do not build custom UDP transport protocols for standard REST APIs where standard HTTP/2 over TLS is secure and fast.',
+    },
+    relatedTopicIds: ['/networking/dns', '/networking/cdn', '/networking/load-balancers'],
+  },
+
+  'api-styles': {
+    topicId: 'api-styles',
+    title: 'API Styles: REST, gRPC, GraphQL, and WebSockets',
+    group: '3. Networking & Delivery',
+    explanation:
+      'API design paradigms define client-server communication contracts. REST utilizes standard HTTP verbs (GET, POST, PUT, DELETE) and JSON payloads. gRPC uses HTTP/2 multiplexing with Protocol Buffers for high-performance, strongly-typed binary RPC microservice communication. GraphQL allows clients to request exact JSON schema shapes in a single query, eliminating over-fetching. WebSockets provide full-duplex persistent stream communication.',
+    realWorldExamples: [
+      {
+        name: 'Stripe REST API',
+        description: 'Predictable resource-oriented URLs with HTTP status codes and JSON response objects.',
+      },
+      {
+        name: 'Netflix Internal Microservice gRPC',
+        description: 'High-throughput low-latency inter-service RPC calls using Protobuf binary payloads.',
+      },
+      {
+        name: 'GitHub GraphQL API v4',
+        description: 'Single endpoint allowing clients to query nested repositories, issues, and PRs in 1 request.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'REST is universally understood with native HTTP caching support',
+        'gRPC reduces payload size by up to 80% with strongly typed Protobuf schemas',
+        'GraphQL eliminates client over-fetching and under-fetching',
+      ],
+      cons: [
+        'REST can lead to over-fetching or multiple round-trip requests for nested data',
+        'gRPC browser support requires gRPC-Web proxy translation',
+        'GraphQL complicates server-side query execution and caching layer design',
+      ],
+      whenNotToUse:
+        'Do not implement GraphQL for simple CRUD microservices where standard REST controllers are faster to develop.',
+    },
+    relatedTopicIds: ['/networking/protocols', '/architecture/microservices', '/bonus/connection-protocols'],
+  },
+
+  'sql-vs-nosql': {
+    topicId: 'sql-vs-nosql',
+    title: 'SQL vs. NoSQL Databases',
+    group: '4. Data & Storage',
+    explanation:
+      'Relational (SQL) databases (e.g. PostgreSQL, MySQL) store data in strict tabular schemas with ACID transactional guarantees and complex SQL JOIN capabilities. Non-relational (NoSQL) databases prioritize horizontal scalability and high write throughput, categorizing into Key-Value (Redis), Document (MongoDB), Wide-Column (Cassandra), and Graph (Neo4j) engines with flexible schemas and eventual consistency models.',
+    realWorldExamples: [
+      {
+        name: 'PostgreSQL for Financial Transactions',
+        description: 'Strict ACID compliance, foreign key constraints, and relational joins.',
+      },
+      {
+        name: 'MongoDB for User Profiles & Catalogs',
+        description: 'Flexible JSON document schemas with dynamic attributes and horizontal sharding.',
+      },
+      {
+        name: 'Redis for Caching & Leaderboards',
+        description: 'In-memory key-value data structures with sub-millisecond read/write latency.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'SQL guarantees strict ACID data consistency and powerful declarative JOIN queries',
+        'NoSQL scales horizontally across hundreds of commodity nodes with high throughput',
+        'NoSQL document stores accommodate rapidly evolving unstructured schemas',
+      ],
+      cons: [
+        'SQL horizontal sharding across complex joined tables is difficult',
+        'NoSQL lacks cross-document ACID transactions and multi-table JOINs',
+        'NoSQL eventual consistency can lead to temporary stale reads',
+      ],
+      whenNotToUse:
+        'Do not use NoSQL for core banking or ledger accounting systems requiring strict multi-table ACID guarantees.',
+    },
+    relatedTopicIds: ['/data/replication', '/data/sharding', '/caching/strategies'],
+  },
+
+  'denormalization-tuning': {
+    topicId: 'denormalization-tuning',
+    title: 'Denormalization & SQL Query Optimization',
+    group: '4. Data & Storage',
+    explanation:
+      'Database normalization (3NF) reduces data redundancy but requires expensive multi-table SQL JOINs at read time. Denormalization intentionally duplicates calculated fields or pre-joined relations into single tables to turn $O(N)$ JOIN queries into $O(1)$ indexed reads. SQL query optimization relies on B-Tree composite indexes, covering indexes, avoiding SELECT *, and analyzing EXPLAIN ANALYZE query plans.',
+    realWorldExamples: [
+      {
+        name: 'E-Commerce Order Item Summary Count',
+        description: 'Pre-aggregating total_items directly on orders table to avoid counting child order_items rows.',
+      },
+      {
+        name: 'PostgreSQL B-Tree Composite Indexing',
+        description: 'Indexing (user_id, created_at DESC) for fast paginated timeline queries.',
+      },
+      {
+        name: 'Materialized Views in Data Warehouses',
+        description: 'Pre-computing complex multi-table analytical aggregations updated on a schedule.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Dramatically speeds up read query performance by eliminating expensive runtime JOINs',
+        'Composite B-Tree indexes enable instant $O(\\log N)$ index scan lookups',
+        'Reduces CPU and RAM consumption on read-heavy database servers',
+      ],
+      cons: [
+        'Requires application-level or trigger logic to keep duplicated data in sync on updates',
+        'Increases storage footprint and write overhead for index updates',
+        'Risk of data anomaly inconsistency if write updates fail partially',
+      ],
+      whenNotToUse:
+        'Do not denormalize tables in write-heavy transactional systems where write locks and update synchronization overhead outweigh read performance gains.',
+    },
+    relatedTopicIds: ['/data/sql-vs-nosql', '/data/sharding', '/caching/strategies'],
+  },
 };
 
 export function getMvpTopicContent(routeId: string) {
