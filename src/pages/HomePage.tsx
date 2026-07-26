@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { CURRICULUM_GROUPS, VizType } from '../data/curriculum';
-import { PlayCircle, BarChart2, FileText, ArrowRight, Layers } from 'lucide-react';
+import { PlayCircle, BarChart2, FileText, ArrowRight, Layers, Network } from 'lucide-react';
+import RoadmapGraph from '../components/roadmap/RoadmapGraph';
 
 export default function HomePage() {
   const getVizIcon = (type: VizType) => {
@@ -33,6 +34,36 @@ export default function HomePage() {
         <p style={{ color: 'var(--color-text-secondary)', fontSize: 'var(--font-size-md)', maxWidth: '700px', lineHeight: 1.6 }}>
           Learn system design through parameter-driven interactive simulations, contrastive diagrams, and live telemetry feeds following roadmap.sh/system-design.
         </p>
+      </div>
+
+      {/* Interactive SVG Roadmap Graph Navigator */}
+      <div className="blueprint-card" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ fontSize: 'var(--font-size-xl)', color: 'var(--color-text-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Network size={20} style={{ color: 'var(--color-accent-primary)' }} />
+            Visual Roadmap Navigator
+          </h2>
+          <div style={{ display: 'flex', gap: '0.75rem', fontSize: 'var(--font-size-xs)', fontFamily: 'var(--font-mono)' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#4b5563' }}></span>
+              Not Started
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#3b82f6' }}></span>
+              Learning
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-status-warning)' }}></span>
+              Comfortable
+            </span>
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: 'var(--color-status-healthy)' }}></span>
+              Mastered
+            </span>
+          </div>
+        </div>
+
+        <RoadmapGraph />
       </div>
 
       {/* Curriculum Groups Grid */}
