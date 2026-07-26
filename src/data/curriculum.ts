@@ -176,6 +176,14 @@ export const CURRICULUM_GROUPS: CurriculumGroup[] = [
         vizType: 'simulation',
         description: 'Catalog #10 dual topology flow comparing load balancing and reverse proxying.',
       },
+      {
+        id: 'l4-vs-l7',
+        path: '/networking/l4-vs-l7',
+        title: 'Layer 4 vs. Layer 7 Routing',
+        topicsCovered: 'Layer 4 vs Layer 7 Routing & Deep Packet Inspection',
+        vizType: 'simulation',
+        description: 'Catalog #14 deep packet inspector comparing L4 transport vs L7 application routing.',
+      },
     ],
   },
   {

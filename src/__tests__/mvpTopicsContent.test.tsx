@@ -31,7 +31,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including DNS Resolution', () => {
+  it('contains authored text content for all MVP topics including Layer 4 vs Layer 7 Routing', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -48,6 +48,7 @@ describe('Content Authoring: MVP Topics', () => {
       'resiliency-advanced',
       'microservices',
       'dns',
+      'l4-vs-l7',
     ];
 
     mvpKeys.forEach((key) => {
@@ -186,5 +187,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/The Domain Name System \(DNS\) translates human-readable domain names/i)).toBeDefined();
     expect(screen.getByText('Google Public DNS (8.8.8.8 / 8.8.4.4)')).toBeDefined();
     expect(screen.getByText(/Decouples human-rememberable brand URLs from changing/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Layer 4 vs Layer 7 Routing topic page', () => {
+    window.history.pushState({}, '', '/networking/l4-vs-l7');
+    render(<App />);
+
+    expect(screen.getByText(/Layer 4 \(Transport Layer\) load balancing operates at the TCP\/UDP level/i)).toBeDefined();
+    expect(screen.getByText('AWS Network Load Balancer (NLB - Layer 4)')).toBeDefined();
+    expect(screen.getByText(/Layer 4 provides maximum throughput and minimal CPU overhead/i)).toBeDefined();
   });
 });
