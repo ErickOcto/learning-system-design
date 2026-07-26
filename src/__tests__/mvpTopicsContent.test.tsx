@@ -50,6 +50,7 @@ describe('Content Authoring: MVP Topics', () => {
       'dns',
       'l4-vs-l7',
       'consistent-hashing',
+      'connection-protocols',
     ];
 
     mvpKeys.forEach((key) => {
@@ -206,5 +207,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/Consistent Hashing maps both data keys and cache\/database storage nodes/i)).toBeDefined();
     expect(screen.getByText('Amazon DynamoDB Consistent Hash Ring')).toBeDefined();
     expect(screen.getByText(/Dramatically reduces cache miss storms during node additions/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Real-time Communication topic page', () => {
+    window.history.pushState({}, '', '/bonus/connection-protocols');
+    render(<App />);
+
+    expect(screen.getByText(/Real-time web communication provides dynamic live updates using four main/i)).toBeDefined();
+    expect(screen.getByText('Slack / Discord Live Chat (WebSockets)')).toBeDefined();
+    expect(screen.getByText(/WebSockets eliminate HTTP header overhead/i)).toBeDefined();
   });
 });

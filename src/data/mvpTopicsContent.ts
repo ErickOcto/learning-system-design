@@ -16,6 +16,7 @@ import MicroservicesVisualizer from '../components/visualizers/MicroservicesVisu
 import DnsVisualizer from '../components/visualizers/DnsVisualizer';
 import L4VsL7Visualizer from '../components/visualizers/L4VsL7Visualizer';
 import ConsistentHashingVisualizer from '../components/visualizers/ConsistentHashingVisualizer';
+import RealtimeCommVisualizer from '../components/visualizers/RealtimeCommVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -662,6 +663,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/data/sharding', '/caching/strategies', '/foundations/scaling'],
     Visualizer: ConsistentHashingVisualizer,
+  },
+
+  'connection-protocols': {
+    topicId: 'connection-protocols',
+    title: 'Real-time Communication: Polling vs. WebSockets vs. SSE',
+    group: 'Bonus — Beyond Core Roadmap',
+    explanation:
+      'Real-time web communication provides dynamic live updates using four main architectural patterns: 1) Short Polling (HTTP GET every N seconds, high header overhead), 2) Long Polling (Server holds request open until event fires), 3) WebSockets (persistent full-duplex bi-directional TCP connection after a 101 Upgrade handshake), and 4) Server-Sent Events (SSE: HTTP text/event-stream unidirectional server push). Selecting the right pattern depends on stream directionality, connection scale, and firewall traversal requirements.',
+    realWorldExamples: [
+      {
+        name: 'Slack / Discord Live Chat (WebSockets)',
+        description: 'Full-duplex low-latency chat messaging and presence sync over persistent WebSocket connections.',
+      },
+      {
+        name: 'Twitter / Financial Stock Ticker (Server-Sent Events)',
+        description: 'Unidirectional live price tick updates streamed continuously over HTTP SSE.',
+      },
+      {
+        name: 'Legacy Notification Polling (Short Polling)',
+        description: 'Periodic background HTTP GET requests for low-frequency notification updates.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'WebSockets eliminate HTTP header overhead (2-byte frames) and provide instant sub-millisecond bi-directional communication',
+        'Server-Sent Events (SSE) feature automatic reconnection and native browser EventSource API support over HTTP/2',
+        'Long Polling falls back gracefully across restrictive corporate firewalls that block WS ports',
+      ],
+      cons: [
+        'WebSockets require complex stateful server infrastructure and load balancer sticky connections',
+        'Short Polling creates massive CPU and network bandwidth waste with empty 200 OK polling responses',
+        'SSE is strictly unidirectional (Server -> Client) and requires separate HTTP calls for client upstream data',
+      ],
+      whenNotToUse:
+        'Do not open persistent WebSockets for rare background tasks executed once a day where standard REST HTTP calls suffice.',
+    },
+    relatedTopicIds: ['/networking/load-balancers', '/messaging/load-leveling', '/networking/lb-vs-proxy'],
+    Visualizer: RealtimeCommVisualizer,
   },
 };
 
