@@ -42,12 +42,31 @@ export interface CacheNodeConfig {
   hitRatio: number; // % hit ratio (0 to 100)
 }
 
+export interface MessageQueueNodeConfig {
+  bufferSize: number;
+  consumerRate: number; // msgs/sec
+}
+
+export interface CdnNodeConfig {
+  edgeRegions: number;
+  cacheHitRatio: number; // % hit ratio
+  originLatencyPenaltyMs: number;
+}
+
+export interface RateLimiterNodeConfig {
+  bucketSize: number; // max tokens
+  refillRate: number; // tokens/sec
+}
+
 export type NodeConfig =
   | ClientNodeConfig
   | LoadBalancerNodeConfig
   | ServerNodeConfig
   | DatabaseNodeConfig
   | CacheNodeConfig
+  | MessageQueueNodeConfig
+  | CdnNodeConfig
+  | RateLimiterNodeConfig
   | Record<string, unknown>;
 
 export interface ComponentNodeMeta {
