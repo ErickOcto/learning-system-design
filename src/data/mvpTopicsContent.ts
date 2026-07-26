@@ -1,5 +1,6 @@
 import { TopicPageProps } from '../types/topic';
 import LoadBalancerVisualizer from '../components/visualizers/LoadBalancerVisualizer';
+import ScalingVisualizer from '../components/visualizers/ScalingVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -37,6 +38,7 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
         'Do not build complex horizontal auto-scaling infrastructure for simple single-server hobby applications where vertical headroom is plentiful and downtime for upgrades is acceptable.',
     },
     relatedTopicIds: ['/networking/load-balancers', '/caching/strategies', '/data/sharding'],
+    Visualizer: ScalingVisualizer,
   },
 
   'load-balancers': {

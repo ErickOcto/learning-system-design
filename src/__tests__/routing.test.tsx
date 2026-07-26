@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen, cleanup } from '@testing-library/react';
 import 'fake-indexeddb/auto';
 import App from '../App';
@@ -9,6 +9,18 @@ describe('Core App Layout & Routing', () => {
   beforeEach(() => {
     cleanup();
     window.history.pushState({}, '', '/');
+    HTMLCanvasElement.prototype.getContext = vi.fn().mockReturnValue({
+      clearRect: vi.fn(),
+      beginPath: vi.fn(),
+      arc: vi.fn(),
+      fill: vi.fn(),
+      stroke: vi.fn(),
+      fillText: vi.fn(),
+      lineTo: vi.fn(),
+      moveTo: vi.fn(),
+      roundRect: vi.fn(),
+      setLineDash: vi.fn(),
+    }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   });
 
   it('renders Header, Sidebar, and HomePage on initial load', () => {
