@@ -33,6 +33,25 @@ export default function VisualizationContainer({
     }
   }, [isVisible, isPlaying, onTogglePlay]);
 
+  // Global Keyboard Shortcuts (Space = Play/Pause, R = Reset)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const activeTag = document.activeElement?.tagName.toLowerCase();
+      if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        onTogglePlay();
+      } else if (e.code === 'KeyR') {
+        e.preventDefault();
+        onReset?.();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onTogglePlay, onReset]);
+
   return (
     <div ref={containerRef} style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
       {/* Controls Bar Strip */}
@@ -58,20 +77,17 @@ export default function VisualizationContainer({
           alignItems: 'center',
           justifyContent: 'center',
           position: 'relative',
+          overflow: 'hidden',
         }}
       >
-        {canvasSlot || (
-          <span style={{ fontFamily: 'var(--font-mono)', fontSize: 'var(--font-size-xs)', color: 'var(--color-text-muted)' }}>
-            [CANVAS_SLOT]
-          </span>
-        )}
+        {canvasSlot}
       </div>
 
-      {/* Synced Caption Feed */}
-      <CaptionFeed captions={captions} />
-
-      {/* Telemetry Metric Readouts Panel */}
+      {/* Live Telemetry Panel */}
       <TelemetryPanel metrics={metrics} />
+
+      {/* Live Captions Feed */}
+      <CaptionFeed captions={captions} />
     </div>
   );
 }
