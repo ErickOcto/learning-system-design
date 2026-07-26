@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Menu, X, Cpu, Layers } from 'lucide-react';
+import { Menu, X, Cpu, Layers, Sparkles } from 'lucide-react';
 import Breadcrumb from './Breadcrumb';
 
 interface HeaderProps {
@@ -86,8 +86,30 @@ export default function Header({ sidebarOpen, onToggleSidebar }: HeaderProps) {
         </div>
       </div>
 
-      {/* Right section: System Status */}
+      {/* Right section: System Status & Playground Link */}
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <Link
+          to="/playground"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.35rem',
+            padding: '0.35rem 0.75rem',
+            borderRadius: 'var(--radius-sm)',
+            backgroundColor: 'var(--color-accent-glow)',
+            border: '1px solid var(--color-accent-primary)',
+            color: 'var(--color-accent-primary)',
+            fontFamily: 'var(--font-heading)',
+            fontSize: 'var(--font-size-xs)',
+            fontWeight: 600,
+            textDecoration: 'none',
+            transition: 'all var(--transition-fast)',
+          }}
+        >
+          <Sparkles size={13} />
+          Playground
+        </Link>
+
         <span className="status-badge status-badge--healthy" style={{ display: 'inline-flex', alignItems: 'center' }}>
           <span className="status-dot"></span>
           <Layers size={11} style={{ marginRight: '2px' }} />
