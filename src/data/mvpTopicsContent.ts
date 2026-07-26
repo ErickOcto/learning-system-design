@@ -5,6 +5,7 @@ import CachingVisualizer from '../components/visualizers/CachingVisualizer';
 import ShardingVisualizer from '../components/visualizers/ShardingVisualizer';
 import MessagingVisualizer from '../components/visualizers/MessagingVisualizer';
 import CdnVisualizer from '../components/visualizers/CdnVisualizer';
+import ReplicationVisualizer from '../components/visualizers/ReplicationVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -233,6 +234,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/caching/strategies', '/caching/layers', '/networking/load-balancers'],
     Visualizer: CdnVisualizer,
+  },
+
+  'data-replication': {
+    topicId: 'data-replication',
+    title: 'Database Replication & Failover',
+    group: '4. Data & Storage',
+    explanation:
+      'Database replication streams Write-Ahead Log (WAL) modifications from a primary leader node to follower replicas. Asynchronous replication provides fast write responses but introduces replication lag and stale reads, while synchronous replication guarantees data consistency at the expense of higher write latency. When a primary node fails, consensus mechanisms automatically promote a follower to primary.',
+    realWorldExamples: [
+      {
+        name: 'PostgreSQL Streaming Replication',
+        description: 'WAL-based asynchronous and synchronous leader-follower streaming replication.',
+      },
+      {
+        name: 'MySQL Group Replication / InnoDB Cluster',
+        description: 'Multi-master and single-primary automated failover clusters with Paxos/Raft consensus.',
+      },
+      {
+        name: 'Amazon Aurora Multi-AZ RDS',
+        description: 'Shared storage auto-healing replication across 6 storage nodes in 3 Availability Zones.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Offloads read query throughput across multiple replica follower instances',
+        'Provides high availability and automated failover recovery during primary hardware crashes',
+        'Asynchronous mode keeps client write latency low',
+      ],
+      cons: [
+        'Asynchronous replication introduces replication lag and risk of reading stale data',
+        'Synchronous mode blocks writes until follower ACKs arrive, increasing write latency',
+        'Failover consensus elections can cause brief write interruption and split-brain risks',
+      ],
+      whenNotToUse:
+        'Do not configure multi-region synchronous replication over long geographic distances where network RTT latency will unacceptably degrade application write performance.',
+    },
+    relatedTopicIds: ['/availability/failover-replication', '/data/sharding', '/availability/consistency-patterns'],
+    Visualizer: ReplicationVisualizer,
   },
 };
 

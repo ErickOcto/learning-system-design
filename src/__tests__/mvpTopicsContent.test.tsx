@@ -29,7 +29,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including CDN', () => {
+  it('contains authored text content for all MVP topics including CDN and Replication', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -37,6 +37,7 @@ describe('Content Authoring: MVP Topics', () => {
       'sharding',
       'queues-pubsub',
       'cdn',
+      'data-replication',
     ];
 
     mvpKeys.forEach((key) => {
@@ -94,5 +95,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/A Content Delivery Network \(CDN\) is a geographically distributed/i)).toBeDefined();
     expect(screen.getByText('Cloudflare Edge Network')).toBeDefined();
     expect(screen.getByText(/Dramatically reduces HTTP request latency by serving content/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Database Replication topic page', () => {
+    window.history.pushState({}, '', '/data/replication');
+    render(<App />);
+
+    expect(screen.getByText(/Database replication streams Write-Ahead Log/i)).toBeDefined();
+    expect(screen.getByText('PostgreSQL Streaming Replication')).toBeDefined();
+    expect(screen.getByText(/Offloads read query throughput across multiple replica follower/i)).toBeDefined();
   });
 });
