@@ -17,6 +17,7 @@ describe('Content Authoring: MVP Topics', () => {
       fillText: vi.fn(),
       lineTo: vi.fn(),
       moveTo: vi.fn(),
+      setLineDash: vi.fn(),
       roundRect: vi.fn(),
     }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   });
@@ -28,13 +29,14 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all 5 MVP topics', () => {
+  it('contains authored text content for all MVP topics including CDN', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
       'cache-strategies',
       'sharding',
       'queues-pubsub',
+      'cdn',
     ];
 
     mvpKeys.forEach((key) => {
@@ -83,5 +85,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/Caching places frequently accessed data in high-speed/i)).toBeDefined();
     expect(screen.getByText('Redis / Memcached')).toBeDefined();
     expect(screen.getByText(/Dramatically reduces query latency/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Content Delivery Networks (CDN) topic page', () => {
+    window.history.pushState({}, '', '/networking/cdn');
+    render(<App />);
+
+    expect(screen.getByText(/A Content Delivery Network \(CDN\) is a geographically distributed/i)).toBeDefined();
+    expect(screen.getByText('Cloudflare Edge Network')).toBeDefined();
+    expect(screen.getByText(/Dramatically reduces HTTP request latency by serving content/i)).toBeDefined();
   });
 });
