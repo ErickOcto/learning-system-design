@@ -1,0 +1,16 @@
+# Ignore agent & tool configs
+.mcp.json
+GEMINI.md
+system-design-learning-lab-prompt.md
+.claude/
+.gemini/
+.cursor/
+.codegraph/
+
+# Operating System
+.DS_Store
+
+# Node dependencies & builds
+node_modules/
+dist/
+build/
