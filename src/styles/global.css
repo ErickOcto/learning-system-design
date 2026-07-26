@@ -72,8 +72,17 @@ body {
   border: 1px solid rgba(59, 130, 246, 0.2);
 }
 
+/* Mobile Sidebar Backdrop (Only visible on mobile screens <= 768px) */
+.mobile-sidebar-backdrop {
+  display: none;
+}
+
 /* Mobile Responsive Adjustments */
 @media (max-width: 768px) {
+  .mobile-sidebar-backdrop {
+    display: block;
+  }
+
   canvas {
     max-width: 100% !important;
     height: auto !important;

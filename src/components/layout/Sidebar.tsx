@@ -59,7 +59,7 @@ export default function Sidebar({ isOpen, onCloseMobile }: SidebarProps) {
   return (
     <>
       {/* Mobile backdrop overlay (only visible on small screens < 768px) */}
-      {isOpen && (
+      {isOpen && typeof window !== 'undefined' && window.innerWidth < 768 && (
         <div
           className="mobile-sidebar-backdrop"
           onClick={onCloseMobile}
