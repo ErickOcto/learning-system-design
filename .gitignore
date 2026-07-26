@@ -14,3 +14,6 @@ system-design-learning-lab-prompt.md
 node_modules/
 dist/
 build/
+
+# other
+create_issues.py
