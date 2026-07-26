@@ -18,6 +18,8 @@ describe('Content Authoring: MVP Topics', () => {
       lineTo: vi.fn(),
       moveTo: vi.fn(),
       setLineDash: vi.fn(),
+      fillRect: vi.fn(),
+      strokeRect: vi.fn(),
       roundRect: vi.fn(),
     }) as unknown as typeof HTMLCanvasElement.prototype.getContext;
   });
@@ -29,7 +31,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including Consistency Patterns', () => {
+  it('contains authored text content for all MVP topics including Load Leveling', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -40,6 +42,7 @@ describe('Content Authoring: MVP Topics', () => {
       'data-replication',
       'cap-theorem',
       'consistency-patterns',
+      'load-leveling',
     ];
 
     mvpKeys.forEach((key) => {
@@ -124,5 +127,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/Consistency patterns define the guarantees a distributed data store provides/i)).toBeDefined();
     expect(screen.getByText('Memcached / Voip Audio (Weak)')).toBeDefined();
     expect(screen.getByText(/Strong consistency eliminates stale reads and data corruption/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Queue Load Leveling topic page', () => {
+    window.history.pushState({}, '', '/messaging/load-leveling');
+    render(<App />);
+
+    expect(screen.getByText(/Queue-based load leveling places a message buffer between an unpredictable/i)).toBeDefined();
+    expect(screen.getByText('AWS SQS + Lambda / Worker Pool')).toBeDefined();
+    expect(screen.getByText(/Shields fragile downstream databases and microservices from 100% CPU crashes/i)).toBeDefined();
   });
 });

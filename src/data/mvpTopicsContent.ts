@@ -8,6 +8,7 @@ import CdnVisualizer from '../components/visualizers/CdnVisualizer';
 import ReplicationVisualizer from '../components/visualizers/ReplicationVisualizer';
 import CapTheoremVisualizer from '../components/visualizers/CapTheoremVisualizer';
 import ConsistencyVisualizer from '../components/visualizers/ConsistencyVisualizer';
+import LoadLevelingVisualizer from '../components/visualizers/LoadLevelingVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -350,6 +351,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/availability/cap-theorem', '/data/replication', '/availability/overview'],
     Visualizer: ConsistencyVisualizer,
+  },
+
+  'load-leveling': {
+    topicId: 'load-leveling',
+    title: 'Queue-Based Load Leveling & Back Pressure',
+    group: '6. Asynchronism & Messaging',
+    explanation:
+      'Queue-based load leveling places a message buffer between an unpredictable, bursty traffic producer and a rate-limited downstream consumer (like a database or legacy API). Instead of flooding and crashing fragile downstream services during sudden traffic spikes, the queue absorbs incoming message bursts and allows consumers to process tasks steadily at their maximum safe rate.',
+    realWorldExamples: [
+      {
+        name: 'AWS SQS + Lambda / Worker Pool',
+        description: 'Buffering bursty web webhook traffic before processing background tasks.',
+      },
+      {
+        name: 'Shopify Flash Sale Queue',
+        description: 'Absorbing Black Friday order checkout floods into an in-memory queue to protect database inventory tables.',
+      },
+      {
+        name: 'Logstash / Kafka Buffer',
+        description: 'Buffering millions of log lines per second before writing to ElasticSearch clusters.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Shields fragile downstream databases and microservices from 100% CPU crashes and HTTP 503 drops',
+        'Converts unpredictable traffic spikes into smooth, flat consumption profiles',
+        'Guarantees message persistence and zero data loss during burst events',
+      ],
+      cons: [
+        'Introduces async processing delay and end-to-end task completion latency',
+        'Requires queue buffer size management to prevent infinite memory growth',
+        'Requires backpressure mechanisms when queue capacity threshold (>80%) is breached',
+      ],
+      whenNotToUse:
+        'Do not place asynchronous load-leveling queues in front of strict synchronous real-time user HTTP requests (e.g. credit card charge authorization where user expects immediate response).',
+    },
+    relatedTopicIds: ['/messaging/queues-pubsub', '/messaging/background-jobs', '/availability/resiliency'],
+    Visualizer: LoadLevelingVisualizer,
   },
 };
 
