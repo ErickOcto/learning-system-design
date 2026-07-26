@@ -15,6 +15,7 @@ import CircuitBreakerVisualizer from '../components/visualizers/CircuitBreakerVi
 import MicroservicesVisualizer from '../components/visualizers/MicroservicesVisualizer';
 import DnsVisualizer from '../components/visualizers/DnsVisualizer';
 import L4VsL7Visualizer from '../components/visualizers/L4VsL7Visualizer';
+import ConsistentHashingVisualizer from '../components/visualizers/ConsistentHashingVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -623,6 +624,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/networking/load-balancers', '/networking/lb-vs-proxy', '/networking/cdn'],
     Visualizer: L4VsL7Visualizer,
+  },
+
+  'consistent-hashing': {
+    topicId: 'consistent-hashing',
+    title: 'Consistent Hashing Ring & Virtual Nodes',
+    group: '4. Data & Storage',
+    explanation:
+      'Consistent Hashing maps both data keys and cache/database storage nodes to a 360-degree virtual hash ring. Unlike traditional modulo hashing (key % N) where adding or removing a node causes a catastrophic 100% cache miss storm by remapping virtually all keys, Consistent Hashing guarantees that adding or removing a node remaps only a fraction (1/N) of the keys to neighbor nodes. Virtual nodes (e.g. Node A-v1, Node A-v2) spread node placement evenly across the ring to prevent hot-spot load imbalance.',
+    realWorldExamples: [
+      {
+        name: 'Amazon DynamoDB Consistent Hash Ring',
+        description: 'Partitioning key ranges across storage nodes in distributed Dynamo storage clusters.',
+      },
+      {
+        name: 'Discord Voice Gateway Router',
+        description: 'Using consistent hashing to route millions of concurrent WebSockets to media server pools with minimal connection dropping during autoscaling.',
+      },
+      {
+        name: 'Apache Cassandra Partitioning (Murmur3Partitioner)',
+        description: 'Token ring distribution mapping 64-bit token ranges across cluster nodes.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Dramatically reduces cache miss storms during node additions/removals by remapping only 1/N keys',
+        'Virtual nodes eliminate non-uniform key clustering and hot-spot server overload',
+        'Allows dynamic elastic scaling of cache and database clusters without full cluster reshuffling',
+      ],
+      cons: [
+        'Increases hash ring lookup metadata overhead and complexity',
+        'Heterogeneous server capacities require tuning virtual node weights',
+        'Cascading remapping on node failure can temporarily increase load on neighboring nodes',
+      ],
+      whenNotToUse:
+        'Do not use Consistent Hashing for small, fixed 2-node primary/replica database setups where standard primary-write / replica-read routing is simpler.',
+    },
+    relatedTopicIds: ['/data/sharding', '/caching/strategies', '/foundations/scaling'],
+    Visualizer: ConsistentHashingVisualizer,
   },
 };
 

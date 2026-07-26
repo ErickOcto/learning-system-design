@@ -209,10 +209,10 @@ export const CURRICULUM_GROUPS: CurriculumGroup[] = [
       {
         id: 'sharding',
         path: '/data/sharding',
-        title: 'Database Sharding & Partitioning',
-        topicsCovered: 'Range, Hash, Consistent Hashing Sharding',
+        title: 'Database Sharding',
+        topicsCovered: 'Key-Based, Range-Based, Directory Sharding',
         vizType: 'simulation',
-        description: 'Catalog #4 sharding router distributing records with hot-shard diagnostics.',
+        description: 'Catalog #4 sharded DB query router with virtual partition keys.',
       },
       {
         id: 'denormalization-tuning',
