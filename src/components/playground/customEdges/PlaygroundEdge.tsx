@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useRef, useMemo } from 'react';
 import { BaseEdge, EdgeProps, getBezierPath, EdgeLabelRenderer } from '@xyflow/react';
 import { usePlaygroundSimulationStore } from '../engine/usePlaygroundSimulationStore';
 
@@ -14,8 +14,8 @@ export default function PlaygroundEdge(props: EdgeProps) {
     style,
     markerEnd,
   } = props;
+
   const pathRef = useRef<SVGPathElement>(null);
-  const [pathLength, setPathLength] = useState<number>(0);
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -26,17 +26,15 @@ export default function PlaygroundEdge(props: EdgeProps) {
     targetPosition,
   });
 
-  const packets = usePlaygroundSimulationStore((s) =>
-    s.packets.filter((p) => p.edgeId === id)
-  );
-
+  const allPackets = usePlaygroundSimulationStore((s) => s.packets);
   const isPlaying = usePlaygroundSimulationStore((s) => s.isPlaying);
 
-  useEffect(() => {
-    if (pathRef.current) {
-      setPathLength(pathRef.current.getTotalLength());
-    }
-  }, [edgePath]);
+  const packets = useMemo(
+    () => allPackets.filter((p) => p.edgeId === id),
+    [allPackets, id]
+  );
+
+  const pathLength = pathRef.current?.getTotalLength() || 0;
 
   return (
     <>
