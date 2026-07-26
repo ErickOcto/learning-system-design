@@ -6,6 +6,7 @@ import ShardingVisualizer from '../components/visualizers/ShardingVisualizer';
 import MessagingVisualizer from '../components/visualizers/MessagingVisualizer';
 import CdnVisualizer from '../components/visualizers/CdnVisualizer';
 import ReplicationVisualizer from '../components/visualizers/ReplicationVisualizer';
+import CapTheoremVisualizer from '../components/visualizers/CapTheoremVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -272,6 +273,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/availability/failover-replication', '/data/sharding', '/availability/consistency-patterns'],
     Visualizer: ReplicationVisualizer,
+  },
+
+  'cap-theorem': {
+    topicId: 'cap-theorem',
+    title: 'CAP Theorem & Network Partitions',
+    group: '2. Availability & Consistency',
+    explanation:
+      'The CAP Theorem states that a distributed system cannot simultaneously guarantee Consistency (every read receives the most recent write or an error), Availability (every non-failing node returns a response), and Partition Tolerance (system operates despite network message loss). When a network partition occurs, the system MUST choose between Consistency (CP) or Availability (AP).',
+    realWorldExamples: [
+      {
+        name: 'Apache Cassandra (AP)',
+        description: 'Tunable eventual consistency preferring node availability during inter-datacenter partitions.',
+      },
+      {
+        name: 'CockroachDB / HBase (CP)',
+        description: 'Raft/Paxos consensus clusters refusing reads/writes on minority partitions to enforce strong consistency.',
+      },
+      {
+        name: 'Amazon DynamoDB (Tunable)',
+        description: 'Allows applications to choose strongly consistent reads (CP) vs eventually consistent reads (AP).',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'CP mode guarantees zero stale reads across nodes, ensuring financial & transactional accuracy',
+        'AP mode maintains 100% read uptime even during physical submarine cable cuts or datacenter isolation',
+        'Provides an explicit mathematical framework for distributed database selection',
+      ],
+      cons: [
+        'CP mode causes application HTTP 503 errors during network split-brain partitions',
+        'AP mode causes temporary data divergence and requires application conflict resolution (LWW / CRDTs)',
+        'Partition Tolerance (P) is non-negotiable in real-world distributed networks',
+      ],
+      whenNotToUse:
+        'Do not design for AP eventual consistency in core accounting system ledgers where serving outdated balance data causes double-spending or financial loss.',
+    },
+    relatedTopicIds: ['/availability/overview', '/availability/consistency-patterns', '/data/replication'],
+    Visualizer: CapTheoremVisualizer,
   },
 };
 

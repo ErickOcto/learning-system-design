@@ -29,7 +29,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including CDN and Replication', () => {
+  it('contains authored text content for all MVP topics including CDN, Replication, and CAP Theorem', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -38,6 +38,7 @@ describe('Content Authoring: MVP Topics', () => {
       'queues-pubsub',
       'cdn',
       'data-replication',
+      'cap-theorem',
     ];
 
     mvpKeys.forEach((key) => {
@@ -104,5 +105,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/Database replication streams Write-Ahead Log/i)).toBeDefined();
     expect(screen.getByText('PostgreSQL Streaming Replication')).toBeDefined();
     expect(screen.getByText(/Offloads read query throughput across multiple replica follower/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for CAP Theorem topic page', () => {
+    window.history.pushState({}, '', '/availability/cap-theorem');
+    render(<App />);
+
+    expect(screen.getByText(/The CAP Theorem states that a distributed system cannot simultaneously/i)).toBeDefined();
+    expect(screen.getByText('Apache Cassandra (AP)')).toBeDefined();
+    expect(screen.getByText(/CP mode guarantees zero stale reads across nodes/i)).toBeDefined();
   });
 });
