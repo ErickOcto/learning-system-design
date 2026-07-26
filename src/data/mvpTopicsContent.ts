@@ -2,6 +2,7 @@ import { TopicPageProps } from '../types/topic';
 import LoadBalancerVisualizer from '../components/visualizers/LoadBalancerVisualizer';
 import ScalingVisualizer from '../components/visualizers/ScalingVisualizer';
 import CachingVisualizer from '../components/visualizers/CachingVisualizer';
+import ShardingVisualizer from '../components/visualizers/ShardingVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -153,6 +154,7 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
         'Do not shard your database prematurely when indexing, vertical hardware upgrades, or read replicas can satisfy your traffic demands.',
     },
     relatedTopicIds: ['/foundations/scaling', '/caching/strategies', '/bonus/consistent-hashing'],
+    Visualizer: ShardingVisualizer,
   },
 
   'queues-pubsub': {
