@@ -1,7 +1,8 @@
 import { useLocation } from 'react-router-dom';
 import { findRouteByPath, VizType } from '../data/curriculum';
-import { PlayCircle, BarChart2, FileText, CheckCircle, ArrowRight } from 'lucide-react';
+import { PlayCircle, BarChart2, FileText, ArrowRight } from 'lucide-react';
 import { useTopicStore } from '../store/useTopicStore';
+import ResourceLibrary from '../components/resources/ResourceLibrary';
 
 export default function TopicPlaceholderPage() {
   const location = useLocation();
@@ -75,7 +76,7 @@ export default function TopicPlaceholderPage() {
       <div
         className="blueprint-card"
         style={{
-          minHeight: '300px',
+          minHeight: '200px',
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
@@ -108,35 +109,13 @@ export default function TopicPlaceholderPage() {
             {route.title} Content Area
           </h3>
           <p style={{ color: 'var(--color-text-secondary)', maxWidth: '500px', fontSize: 'var(--font-size-sm)' }}>
-            App Shell &amp; Route Navigation verified! Topic page template and visualization canvas modules will mount here in upcoming milestone issues.
+            App Shell &amp; Route Navigation verified! Visualization canvas modules will mount here.
           </p>
         </div>
-
-        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-          <button
-            onClick={() => topicStore.setTopicStatus(route.id, 'learning')}
-            className="status-badge status-badge--info"
-            style={{ cursor: 'pointer', border: '1px solid var(--color-border-subtle)' }}
-          >
-            Mark as Learning
-          </button>
-          <button
-            onClick={() => topicStore.setTopicStatus(route.id, 'comfortable')}
-            className="status-badge status-badge--warning"
-            style={{ cursor: 'pointer', border: '1px solid var(--color-border-subtle)' }}
-          >
-            Mark as Comfortable
-          </button>
-          <button
-            onClick={() => topicStore.setTopicStatus(route.id, 'mastered')}
-            className="status-badge status-badge--healthy"
-            style={{ cursor: 'pointer', border: '1px solid var(--color-border-subtle)' }}
-          >
-            <CheckCircle size={12} />
-            Mark as Mastered
-          </button>
-        </div>
       </div>
+
+      {/* § 6 Resource Library */}
+      <ResourceLibrary topicId={route.id} />
     </div>
   );
 }

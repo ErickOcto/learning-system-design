@@ -2,8 +2,9 @@ import ExplanationSection from './ExplanationSection';
 import RealWorldSection from './RealWorldSection';
 import TradeoffsSection from './TradeoffsSection';
 import RelatedTopicsSection from './RelatedTopicsSection';
+import ResourceLibrary from '../resources/ResourceLibrary';
 import { TopicPageProps } from '../../types/topic';
-import { PlayCircle, Bookmark } from 'lucide-react';
+import { PlayCircle } from 'lucide-react';
 
 export default function TopicPageLayout({
   topicId,
@@ -66,26 +67,8 @@ export default function TopicPageLayout({
       {/* § 5 — Related Topics */}
       <RelatedTopicsSection relatedTopicIds={relatedTopicIds} />
 
-      {/* § 6 — My Resources Placeholder Slot */}
-      <section className="blueprint-card" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-        <h2 style={{ fontSize: 'var(--font-size-lg)', color: 'var(--color-accent-primary)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <Bookmark size={18} />
-          § 6 — My Resources
-        </h2>
-        <div
-          style={{
-            padding: '1.25rem',
-            backgroundColor: 'var(--color-bg-base)',
-            border: '1px dashed var(--color-border-subtle)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: 'var(--font-size-sm)',
-            color: 'var(--color-text-muted)',
-            fontFamily: 'var(--font-mono)',
-          }}
-        >
-          [RESOURCE_LIBRARY_SLOT: Notes, Bookmarks, and Status Manager for {topicId}]
-        </div>
-      </section>
+      {/* § 6 — My Resources */}
+      <ResourceLibrary topicId={topicId} />
     </article>
   );
 }
