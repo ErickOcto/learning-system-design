@@ -5,6 +5,8 @@ import { LoadBalancerAlgorithm, ClientPattern, DatabaseType } from '../types';
 let packetCounter = 1;
 let lastEmitTimestampMap: Record<string, number> = {};
 let lbRrIndices: Record<string, number> = {};
+let rateLimiterTokensMap: Record<string, number> = {};
+let mqBufferMap: Record<string, number> = {};
 
 function simpleHash(str: string): number {
   let hash = 0;
@@ -33,6 +35,8 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
   resetSimulation: () => {
     lastEmitTimestampMap = {};
     lbRrIndices = {};
+    rateLimiterTokensMap = {};
+    mqBufferMap = {};
     packetCounter = 1;
     set({
       isPlaying: false,
@@ -52,10 +56,22 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
     const effectiveDelta = (deltaMs / 1000) * state.speedMultiplier;
     const now = performance.now();
 
-    // Map of nodes by ID for fast lookup
     const nodeMap = new Map<string, any>(nodes.map((n) => [n.id, n]));
 
-    // 1. Client Emission: Emit packets from client nodes according to RPS and pattern
+    // Refill Rate Limiter tokens over time
+    nodes.forEach((node) => {
+      if (node.data?.componentType === 'rate_limiter') {
+        const config = node.data?.config || {};
+        const bucketSize = config.bucketSize ?? 10;
+        const refillRate = config.refillRate ?? 5;
+
+        const currentTokens = rateLimiterTokensMap[node.id] ?? bucketSize;
+        const refilled = Math.min(bucketSize, currentTokens + refillRate * effectiveDelta);
+        rateLimiterTokensMap[node.id] = refilled;
+      }
+    });
+
+    // 1. Client Emission
     const clientNodes = nodes.filter((n) => n.data?.componentType === 'client');
     const newPackets: SimulationPacket[] = [];
 
@@ -99,7 +115,6 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
     const updatedPackets: SimulationPacket[] = [];
     const newMetrics = { ...state.metrics };
 
-    // Active connection count per node
     const activeConnectionCounts: Record<string, number> = {};
     state.packets.forEach((p) => {
       activeConnectionCounts[p.targetNodeId] = (activeConnectionCounts[p.targetNodeId] || 0) + 1;
@@ -109,7 +124,6 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
       const nextProgress = pkt.progress + pkt.speed * effectiveDelta;
 
       if (nextProgress >= 1) {
-        // Reached destination node
         const targetNode = nodeMap.get(pkt.targetNodeId);
 
         if (!targetNode) return;
@@ -124,7 +138,7 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
         };
 
         if (componentType === 'load_balancer') {
-          // --- LOAD BALANCER ROUTING ---
+          // --- LOAD BALANCER ---
           const lbConfig = targetNode.data?.config || {};
           const algorithm: LoadBalancerAlgorithm = lbConfig.algorithm || 'round_robin';
           const healthChecks = lbConfig.healthChecks !== false;
@@ -159,7 +173,6 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
               selectedEdge = outboundEdges[index];
             }
 
-            // Forward packet along selected edge
             updatedPackets.push({
               id: pkt.id,
               edgeId: selectedEdge.id,
@@ -173,23 +186,116 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
 
             nodeMetric.totalProcessed += 1;
           } else {
-            // No healthy downstream target -> drop packet
+            nodeMetric.totalDropped += 1;
+            droppedIncrement += 1;
+          }
+        } else if (componentType === 'rate_limiter') {
+          // --- RATE LIMITER (Token Bucket) ---
+          const tokens = rateLimiterTokensMap[targetNode.id] ?? 10;
+
+          if (isTargetHealthy && tokens >= 1) {
+            // Consume 1 token & forward downstream
+            rateLimiterTokensMap[targetNode.id] = tokens - 1;
+            const outboundEdges = edges.filter((e) => e.source === targetNode.id);
+
+            if (outboundEdges.length > 0) {
+              const forwardEdge = outboundEdges[0];
+              updatedPackets.push({
+                id: pkt.id,
+                edgeId: forwardEdge.id,
+                sourceNodeId: forwardEdge.source,
+                targetNodeId: forwardEdge.target,
+                progress: 0,
+                speed: 0.9,
+                status: 'in_flight',
+                color: 'var(--color-status-healthy)',
+              });
+              nodeMetric.totalProcessed += 1;
+            } else {
+              nodeMetric.totalProcessed += 1;
+              processedIncrement += 1;
+            }
+          } else {
+            // Rate Limited (429) -> drop packet
+            nodeMetric.totalDropped += 1;
+            droppedIncrement += 1;
+          }
+        } else if (componentType === 'message_queue') {
+          // --- MESSAGE QUEUE ---
+          const mqConfig = targetNode.data?.config || {};
+          const bufferSize = mqConfig.bufferSize || 20;
+          const currentBuffer = mqBufferMap[targetNode.id] || 0;
+
+          if (isTargetHealthy && currentBuffer < bufferSize) {
+            mqBufferMap[targetNode.id] = currentBuffer + 1;
+            const outboundEdges = edges.filter((e) => e.source === targetNode.id);
+
+            if (outboundEdges.length > 0) {
+              const forwardEdge = outboundEdges[0];
+              updatedPackets.push({
+                id: pkt.id,
+                edgeId: forwardEdge.id,
+                sourceNodeId: forwardEdge.source,
+                targetNodeId: forwardEdge.target,
+                progress: 0,
+                speed: 0.6,
+                status: 'in_flight',
+                color: 'var(--color-status-info)',
+              });
+            }
+            nodeMetric.totalProcessed += 1;
+            processedIncrement += 1;
+          } else {
+            // Queue buffer full -> drop packet
+            nodeMetric.totalDropped += 1;
+            droppedIncrement += 1;
+          }
+        } else if (componentType === 'cdn') {
+          // --- CDN / EDGE ---
+          const cdnConfig = targetNode.data?.config || {};
+          const cacheHitRatio = cdnConfig.cacheHitRatio ?? 80;
+          const isHit = Math.random() * 100 < cacheHitRatio;
+
+          if (isTargetHealthy) {
+            if (isHit) {
+              nodeMetric.totalProcessed += 1;
+              processedIncrement += 1;
+            } else {
+              // CDN Miss -> forward to Origin
+              const outboundEdges = edges.filter((e) => e.source === targetNode.id);
+              if (outboundEdges.length > 0) {
+                const forwardEdge = outboundEdges[0];
+                updatedPackets.push({
+                  id: pkt.id,
+                  edgeId: forwardEdge.id,
+                  sourceNodeId: forwardEdge.source,
+                  targetNodeId: forwardEdge.target,
+                  progress: 0,
+                  speed: 0.5,
+                  status: 'in_flight',
+                  color: 'var(--color-status-warning)',
+                });
+                nodeMetric.totalProcessed += 1;
+              } else {
+                nodeMetric.totalProcessed += 1;
+                processedIncrement += 1;
+              }
+            }
+          } else {
             nodeMetric.totalDropped += 1;
             droppedIncrement += 1;
           }
         } else if (componentType === 'cache') {
-          // --- CACHE NODE LOGIC (Hit vs Miss) ---
+          // --- CACHE NODE LOGIC ---
           const cacheConfig = targetNode.data?.config || {};
           const hitRatio = cacheConfig.hitRatio ?? 70;
           const isHit = Math.random() * 100 < hitRatio;
 
           if (isTargetHealthy) {
             if (isHit) {
-              // Cache Hit -> fast return
               nodeMetric.totalProcessed += 1;
               processedIncrement += 1;
             } else {
-              // Cache Miss -> fall through to downstream target (Server/DB)
               const outboundEdges = edges.filter((e) => e.source === targetNode.id);
               if (outboundEdges.length > 0) {
                 const forwardEdge = outboundEdges[0];
@@ -201,7 +307,7 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
                   progress: 0,
                   speed: 0.7,
                   status: 'in_flight',
-                  color: 'var(--color-status-warning)', // Amber for cache miss path
+                  color: 'var(--color-status-warning)',
                 });
                 nodeMetric.totalProcessed += 1;
               } else {
@@ -214,7 +320,7 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
             droppedIncrement += 1;
           }
         } else if (componentType === 'database') {
-          // --- DATABASE NODE LOGIC (Primary vs Replica) ---
+          // --- DATABASE ---
           const dbConfig = targetNode.data?.config || {};
           const dbType: DatabaseType = dbConfig.dbType || 'primary';
 
@@ -223,7 +329,6 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
             processedIncrement += 1;
 
             if (dbType === 'primary') {
-              // Primary DB: Emit async replication packets to connected replica nodes
               const replicaEdges = edges.filter((e) => {
                 if (e.source !== targetNode.id) return false;
                 const destNode = nodeMap.get(e.target);
@@ -237,9 +342,9 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
                   sourceNodeId: edge.source,
                   targetNodeId: edge.target,
                   progress: 0,
-                  speed: 0.5, // replication travels slower (replication lag)
+                  speed: 0.5,
                   status: 'in_flight',
-                  color: 'var(--color-status-warning)', // Amber replication packets
+                  color: 'var(--color-status-warning)',
                 });
               });
             }
@@ -248,7 +353,7 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
             droppedIncrement += 1;
           }
         } else if (componentType === 'server') {
-          // --- SERVER PROCESSING ---
+          // --- SERVER ---
           const serverConfig = targetNode.data?.config || {};
           const maxCapacity = serverConfig.maxCapacity || 10;
           const currentLoad = activeConnectionCounts[targetNode.id] || 0;
@@ -257,12 +362,11 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
             nodeMetric.totalProcessed += 1;
             processedIncrement += 1;
           } else {
-            // Server overloaded or down -> drop packet
             nodeMetric.totalDropped += 1;
             droppedIncrement += 1;
           }
         } else {
-          // General node default
+          // Default
           if (isTargetHealthy) {
             nodeMetric.totalProcessed += 1;
             processedIncrement += 1;
@@ -274,7 +378,6 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
 
         newMetrics[pkt.targetNodeId] = nodeMetric;
       } else {
-        // Still in flight
         updatedPackets.push({
           ...pkt,
           progress: nextProgress,

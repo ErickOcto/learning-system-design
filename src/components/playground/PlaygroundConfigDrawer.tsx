@@ -342,26 +342,6 @@ export default function PlaygroundConfigDrawer({
                 style={{ width: '100%', accentColor: 'var(--color-accent-primary)' }}
               />
             </div>
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                  Read / Write Ratio
-                </label>
-                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-accent-primary)' }}>
-                  {config.readWriteSplit || 80}% Reads
-                </span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                value={config.readWriteSplit || 80}
-                onChange={(e) => updateConfig({ readWriteSplit: Number(e.target.value) })}
-                style={{ width: '100%', accentColor: 'var(--color-accent-primary)' }}
-              />
-            </div>
           </div>
         )}
 
@@ -410,22 +390,133 @@ export default function PlaygroundConfigDrawer({
                 <option value="FIFO">FIFO (First In First Out)</option>
               </select>
             </div>
+          </div>
+        )}
+
+        {/* Message Queue-specific settings */}
+        {data.componentType === 'message_queue' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Buffer Size
+                </label>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-status-info)' }}>
+                  {config.bufferSize || 20} msgs
+                </span>
+              </div>
+              <input
+                type="range"
+                min="5"
+                max="100"
+                value={config.bufferSize || 20}
+                onChange={(e) => updateConfig({ bufferSize: Number(e.target.value) })}
+                style={{ width: '100%', accentColor: 'var(--color-status-info)' }}
+              />
+            </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
-                  Max Capacity
+                  Consumer Processing Rate
                 </label>
                 <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-accent-primary)' }}>
-                  {config.capacity || 10} items
+                  {config.consumerRate || 5} msgs/s
+                </span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="30"
+                value={config.consumerRate || 5}
+                onChange={(e) => updateConfig({ consumerRate: Number(e.target.value) })}
+                style={{ width: '100%', accentColor: 'var(--color-accent-primary)' }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* CDN / Edge-specific settings */}
+        {data.componentType === 'cdn' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Edge Cache Hit Ratio
+                </label>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-status-healthy)' }}>
+                  {config.cacheHitRatio || 80}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={config.cacheHitRatio || 80}
+                onChange={(e) => updateConfig({ cacheHitRatio: Number(e.target.value) })}
+                style={{ width: '100%', accentColor: 'var(--color-status-healthy)' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Edge Regions (POP Count)
+                </label>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-accent-primary)' }}>
+                  {config.edgeRegions || 3} regions
+                </span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="5"
+                value={config.edgeRegions || 3}
+                onChange={(e) => updateConfig({ edgeRegions: Number(e.target.value) })}
+                style={{ width: '100%', accentColor: 'var(--color-accent-primary)' }}
+              />
+            </div>
+          </div>
+        )}
+
+        {/* Rate Limiter-specific settings */}
+        {data.componentType === 'rate_limiter' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Bucket Token Capacity
+                </label>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-status-warning)' }}>
+                  {config.bucketSize || 10} tokens
                 </span>
               </div>
               <input
                 type="range"
                 min="1"
                 max="50"
-                value={config.capacity || 10}
-                onChange={(e) => updateConfig({ capacity: Number(e.target.value) })}
+                value={config.bucketSize || 10}
+                onChange={(e) => updateConfig({ bucketSize: Number(e.target.value) })}
+                style={{ width: '100%', accentColor: 'var(--color-status-warning)' }}
+              />
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                <label style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+                  Token Refill Rate
+                </label>
+                <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', color: 'var(--color-accent-primary)' }}>
+                  {config.refillRate || 5} tokens/s
+                </span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="30"
+                value={config.refillRate || 5}
+                onChange={(e) => updateConfig({ refillRate: Number(e.target.value) })}
                 style={{ width: '100%', accentColor: 'var(--color-accent-primary)' }}
               />
             </div>
