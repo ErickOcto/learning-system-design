@@ -31,7 +31,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including Layer 4 vs Layer 7 Routing', () => {
+  it('contains authored text content for all MVP topics including Consistent Hashing', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -49,6 +49,7 @@ describe('Content Authoring: MVP Topics', () => {
       'microservices',
       'dns',
       'l4-vs-l7',
+      'consistent-hashing',
     ];
 
     mvpKeys.forEach((key) => {
@@ -196,5 +197,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/Layer 4 \(Transport Layer\) load balancing operates at the TCP\/UDP level/i)).toBeDefined();
     expect(screen.getByText('AWS Network Load Balancer (NLB - Layer 4)')).toBeDefined();
     expect(screen.getByText(/Layer 4 provides maximum throughput and minimal CPU overhead/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Consistent Hashing Ring topic page', () => {
+    window.history.pushState({}, '', '/bonus/consistent-hashing');
+    render(<App />);
+
+    expect(screen.getByText(/Consistent Hashing maps both data keys and cache\/database storage nodes/i)).toBeDefined();
+    expect(screen.getByText('Amazon DynamoDB Consistent Hash Ring')).toBeDefined();
+    expect(screen.getByText(/Dramatically reduces cache miss storms during node additions/i)).toBeDefined();
   });
 });
