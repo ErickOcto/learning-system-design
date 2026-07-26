@@ -14,6 +14,7 @@ import LbVsProxyVisualizer from '../components/visualizers/LbVsProxyVisualizer';
 import CircuitBreakerVisualizer from '../components/visualizers/CircuitBreakerVisualizer';
 import MicroservicesVisualizer from '../components/visualizers/MicroservicesVisualizer';
 import DnsVisualizer from '../components/visualizers/DnsVisualizer';
+import L4VsL7Visualizer from '../components/visualizers/L4VsL7Visualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -584,6 +585,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/networking/cdn', '/networking/lb-vs-proxy', '/networking/load-balancers'],
     Visualizer: DnsVisualizer,
+  },
+
+  'l4-vs-l7': {
+    topicId: 'l4-vs-l7',
+    title: 'Layer 4 vs. Layer 7 Routing & Inspection',
+    group: '4. Networking & Routing',
+    explanation:
+      'Layer 4 (Transport Layer) load balancing operates at the TCP/UDP level, inspecting only Source/Destination IP and Port headers to hash and forward raw packet streams with ultra-low latency (0.2ms). Layer 7 (Application Layer) load balancing performs deep HTTP packet inspection, parsing URL paths (/api vs /static), HTTP headers, and cookies to execute smart, content-aware routing to specialized server pools (e.g., CDN static pools or dedicated VIP compute clusters).',
+    realWorldExamples: [
+      {
+        name: 'AWS Network Load Balancer (NLB - Layer 4)',
+        description: 'Ultra-low latency TCP/UDP load balancer handling millions of requests per second with static IP addresses.',
+      },
+      {
+        name: 'AWS Application Load Balancer (ALB - Layer 7)',
+        description: 'Content-based HTTP/HTTPS routing inspecting URL paths (/api/v1/*), host headers, and gRPC calls.',
+      },
+      {
+        name: 'HAProxy L4 vs L7 Mode',
+        description: 'Configurable mode=tcp (L4 passthrough) vs mode=http (L7 deep packet inspection and header rewrite).',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Layer 4 provides maximum throughput and minimal CPU overhead (0.2ms latency) without decrypting TLS',
+        'Layer 7 enables intelligent path-based microservice routing, cookie-based VIP prioritization, and A/B test routing',
+        'Layer 7 provides granular HTTP health checks and header manipulation',
+      ],
+      cons: [
+        'Layer 4 cannot route based on URL paths, HTTP headers, or session cookies',
+        'Layer 7 requires expensive TLS decryption/re-encryption and deep packet parsing overhead (1-3ms)',
+        'Layer 7 consumes significantly more memory and CPU cycles per connection than Layer 4',
+      ],
+      whenNotToUse:
+        'Do not use Layer 7 HTTP routing for non-HTTP raw TCP/UDP protocols (like database connections or video streaming) where Layer 4 TCP proxying is mandatory.',
+    },
+    relatedTopicIds: ['/networking/load-balancers', '/networking/lb-vs-proxy', '/networking/cdn'],
+    Visualizer: L4VsL7Visualizer,
   },
 };
 
