@@ -10,6 +10,7 @@ import CapTheoremVisualizer from '../components/visualizers/CapTheoremVisualizer
 import ConsistencyVisualizer from '../components/visualizers/ConsistencyVisualizer';
 import LoadLevelingVisualizer from '../components/visualizers/LoadLevelingVisualizer';
 import TokenBucketVisualizer from '../components/visualizers/TokenBucketVisualizer';
+import LbVsProxyVisualizer from '../components/visualizers/LbVsProxyVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -428,6 +429,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/availability/overview', '/availability/nines', '/messaging/load-leveling'],
     Visualizer: TokenBucketVisualizer,
+  },
+
+  'lb-vs-proxy': {
+    topicId: 'lb-vs-proxy',
+    title: 'Load Balancer vs. Reverse Proxy',
+    group: '4. Networking & Routing',
+    explanation:
+      'While Reverse Proxies and Load Balancers often run on the exact same software engines (NGINX, HAProxy, Envoy), they perform fundamentally different architectural roles. A Reverse Proxy acts as an Edge Gateway facing external clients to terminate TLS/SSL, mask internal backend IPs, cache responses, and enforce security. A Load Balancer sits between clients and server pools to distribute traffic evenly across multiple identical worker instances using algorithms like Round Robin or Least Connections.',
+    realWorldExamples: [
+      {
+        name: 'NGINX as Edge Reverse Proxy',
+        description: 'Terminating SSL certificates, compressing Gzip assets, and proxying requests to internal 10.x.x.x microservice IPs.',
+      },
+      {
+        name: 'HAProxy Layer 7 Load Balancer',
+        description: 'Distributing thousands of incoming HTTP requests per second across 20 web server worker instances.',
+      },
+      {
+        name: 'Envoy Service Mesh (Dual Role)',
+        description: 'Acting as both edge ingress gateway (Reverse Proxy) and sidecar load balancer across Kubernetes pods.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Reverse proxies obscure internal server topology and offload expensive cryptographic TLS handshakes',
+        'Load balancers eliminate single points of failure and scale horizontal compute capacity infinitely',
+        'Modern proxies (NGINX/Envoy) seamlessly combine both roles into a single efficient deployment layer',
+      ],
+      cons: [
+        'Introduces an additional network hop (+1-5ms latency) between client and origin',
+        'Single gateway instance without high-availability VIP floating IP becomes a single point of failure',
+        'Requires careful header forwarding configuration (X-Forwarded-For, X-Forwarded-Proto)',
+      ],
+      whenNotToUse:
+        'Do not place complex reverse proxies in front of low-latency internal microservice IPC if direct gRPC connections with client-side load balancing (e.g. gRPC Lookaside) meet performance targets.',
+    },
+    relatedTopicIds: ['/networking/load-balancers', '/networking/cdn', '/foundations/scaling'],
+    Visualizer: LbVsProxyVisualizer,
   },
 };
 
