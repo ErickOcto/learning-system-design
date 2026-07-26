@@ -13,6 +13,7 @@ import TokenBucketVisualizer from '../components/visualizers/TokenBucketVisualiz
 import LbVsProxyVisualizer from '../components/visualizers/LbVsProxyVisualizer';
 import CircuitBreakerVisualizer from '../components/visualizers/CircuitBreakerVisualizer';
 import MicroservicesVisualizer from '../components/visualizers/MicroservicesVisualizer';
+import DnsVisualizer from '../components/visualizers/DnsVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -545,6 +546,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/availability/resiliency-advanced', '/foundations/scaling', '/networking/lb-vs-proxy'],
     Visualizer: MicroservicesVisualizer,
+  },
+
+  'dns': {
+    topicId: 'dns',
+    title: 'Domain Name System (DNS) Resolution Lifecycle',
+    group: '4. Networking & Routing',
+    explanation:
+      'The Domain Name System (DNS) translates human-readable domain names (e.g. example.com) into numerical IP addresses (e.g. 93.184.216.34) required for TCP/IP network routing. DNS resolution proceeds through a 5-step hierarchical lookup: Browser Cache -> OS Resolver (8.8.8.8) -> Root Nameserver (.) -> TLD Nameserver (.com) -> Authoritative Nameserver (ns1.example.com). Responses are cached at every layer using TTL (Time To Live) headers to minimize lookup latency for subsequent requests.',
+    realWorldExamples: [
+      {
+        name: 'Google Public DNS (8.8.8.8 / 8.8.4.4)',
+        description: 'Global high-performance recursive resolver handling hundreds of billions of queries per day with geo-routed caching.',
+      },
+      {
+        name: 'Cloudflare 1.1.1.1 & Authoritative DNS',
+        description: 'Ultra-fast authoritative DNS service offering 10ms global resolution time and DNSSEC validation.',
+      },
+      {
+        name: 'Amazon Route 53',
+        description: 'Cloud DNS web service providing latency-based routing, geo-DNS steering, and health-check failover.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Decouples human-rememberable brand URLs from changing underlying physical server IP addresses',
+        'Hierarchical caching drastically speeds up repeat domain resolutions to under 2ms',
+        'Enables Geo-DNS traffic steering, global load balancing, and failover failover switching',
+      ],
+      cons: [
+        'DNS TTL caching delays propagation of emergency server IP updates across worldwide resolvers',
+        'Vulnerable to DNS spoofing / poisoning attacks if DNSSEC security validation is omitted',
+        'Single authoritative DNS provider outage breaks domain resolution for all worldwide clients',
+      ],
+      whenNotToUse:
+        'Do not rely solely on public DNS for internal microservice-to-microservice RPC discovery; use internal Service Discovery registries (e.g. Consul, CoreDNS in K8s) with sub-second health convergence.',
+    },
+    relatedTopicIds: ['/networking/cdn', '/networking/lb-vs-proxy', '/networking/load-balancers'],
+    Visualizer: DnsVisualizer,
   },
 };
 
