@@ -15,7 +15,9 @@ import {
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import PlaygroundNode from './customNodes/PlaygroundNode';
+import PlaygroundEdge from './customEdges/PlaygroundEdge';
 import { ComponentNodeType, PlaygroundNodeData } from './types';
+import { useSimulationLoop } from './engine/useSimulationLoop';
 
 const initialNodes: Node<PlaygroundNodeData>[] = [
   {
@@ -45,9 +47,9 @@ const initialNodes: Node<PlaygroundNodeData>[] = [
 ];
 
 const initialEdges: Edge[] = [
-  { id: 'e-c1-lb1', source: 'client-1', target: 'lb-1', animated: true, style: { stroke: 'var(--color-accent-primary)', strokeWidth: 2 } },
-  { id: 'e-lb1-s1', source: 'lb-1', target: 'server-1', animated: true, style: { stroke: 'var(--color-status-healthy)', strokeWidth: 2 } },
-  { id: 'e-lb1-s2', source: 'lb-1', target: 'server-2', animated: true, style: { stroke: 'var(--color-status-healthy)', strokeWidth: 2 } },
+  { id: 'e-c1-lb1', source: 'client-1', target: 'lb-1', type: 'playgroundEdge' },
+  { id: 'e-lb1-s1', source: 'lb-1', target: 'server-1', type: 'playgroundEdge' },
+  { id: 'e-lb1-s2', source: 'lb-1', target: 'server-2', type: 'playgroundEdge' },
 ];
 
 let idCounter = 1;
@@ -57,9 +59,19 @@ export default function PlaygroundCanvas() {
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { screenToFlowPosition } = useReactFlow();
 
+  // Run simulation tick loop
+  useSimulationLoop(nodes, edges);
+
   const nodeTypes = useMemo(
     () => ({
       playgroundNode: PlaygroundNode,
+    }),
+    []
+  );
+
+  const edgeTypes = useMemo(
+    () => ({
+      playgroundEdge: PlaygroundEdge,
     }),
     []
   );
@@ -70,8 +82,7 @@ export default function PlaygroundCanvas() {
         addEdge(
           {
             ...params,
-            animated: true,
-            style: { stroke: 'var(--color-accent-primary)', strokeWidth: 2 },
+            type: 'playgroundEdge',
           },
           eds
         )
@@ -124,6 +135,7 @@ export default function PlaygroundCanvas() {
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
