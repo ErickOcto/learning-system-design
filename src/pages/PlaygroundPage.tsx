@@ -1,10 +1,28 @@
-import { ReactFlowProvider } from '@xyflow/react';
+import { useState } from 'react';
+import { ReactFlowProvider, Node } from '@xyflow/react';
 import PlaygroundPalette from '../components/playground/PlaygroundPalette';
 import PlaygroundCanvas from '../components/playground/PlaygroundCanvas';
 import PlaygroundControlsBar from '../components/playground/PlaygroundControlsBar';
+import PlaygroundConfigDrawer from '../components/playground/PlaygroundConfigDrawer';
+import { PlaygroundNodeData } from '../components/playground/types';
 import { Cpu } from 'lucide-react';
 
-export default function PlaygroundPage() {
+function PlaygroundPageContent() {
+  const [selectedNode, setSelectedNode] = useState<Node<PlaygroundNodeData> | null>(null);
+
+  const handleUpdateNodeData = (nodeId: string, newData: Partial<PlaygroundNodeData>) => {
+    setSelectedNode((prev) => {
+      if (!prev || prev.id !== nodeId) return prev;
+      return {
+        ...prev,
+        data: {
+          ...prev.data,
+          ...newData,
+        },
+      };
+    });
+  };
+
   return (
     <div
       style={{
@@ -52,7 +70,7 @@ export default function PlaygroundPage() {
               border: '1px solid var(--color-border-subtle)',
             }}
           >
-            Simulation Engine v1
+            Core Nodes v1
           </span>
         </div>
       </div>
@@ -63,10 +81,27 @@ export default function PlaygroundPage() {
       {/* Main Canvas Body */}
       <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}>
         <PlaygroundPalette />
-        <ReactFlowProvider>
-          <PlaygroundCanvas />
-        </ReactFlowProvider>
+
+        <div style={{ flex: 1, position: 'relative' }}>
+          <PlaygroundCanvas onSelectNode={setSelectedNode} />
+        </div>
+
+        {selectedNode && (
+          <PlaygroundConfigDrawer
+            selectedNode={selectedNode}
+            onClose={() => setSelectedNode(null)}
+            onUpdateNodeData={handleUpdateNodeData}
+          />
+        )}
       </div>
     </div>
+  );
+}
+
+export default function PlaygroundPage() {
+  return (
+    <ReactFlowProvider>
+      <PlaygroundPageContent />
+    </ReactFlowProvider>
   );
 }

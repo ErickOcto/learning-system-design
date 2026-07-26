@@ -24,25 +24,45 @@ const initialNodes: Node<PlaygroundNodeData>[] = [
     id: 'client-1',
     type: 'playgroundNode',
     position: { x: 100, y: 150 },
-    data: { label: 'Web Client', componentType: 'client', iconName: 'users' },
+    data: {
+      label: 'Web Client',
+      componentType: 'client',
+      iconName: 'users',
+      config: { requestRate: 5, pattern: 'steady' },
+    },
   },
   {
     id: 'lb-1',
     type: 'playgroundNode',
     position: { x: 350, y: 150 },
-    data: { label: 'Load Balancer', componentType: 'load_balancer', iconName: 'network' },
+    data: {
+      label: 'Load Balancer',
+      componentType: 'load_balancer',
+      iconName: 'network',
+      config: { algorithm: 'round_robin', healthChecks: true },
+    },
   },
   {
     id: 'server-1',
     type: 'playgroundNode',
     position: { x: 600, y: 80 },
-    data: { label: 'App Server 1', componentType: 'server', iconName: 'server' },
+    data: {
+      label: 'App Server 1',
+      componentType: 'server',
+      iconName: 'server',
+      config: { maxCapacity: 10, processingTimeMs: 200 },
+    },
   },
   {
     id: 'server-2',
     type: 'playgroundNode',
     position: { x: 600, y: 220 },
-    data: { label: 'App Server 2', componentType: 'server', iconName: 'server' },
+    data: {
+      label: 'App Server 2',
+      componentType: 'server',
+      iconName: 'server',
+      config: { maxCapacity: 10, processingTimeMs: 200 },
+    },
   },
 ];
 
@@ -54,7 +74,13 @@ const initialEdges: Edge[] = [
 
 let idCounter = 1;
 
-export default function PlaygroundCanvas() {
+interface PlaygroundCanvasProps {
+  onSelectNode: (node: Node<PlaygroundNodeData> | null) => void;
+}
+
+export default function PlaygroundCanvas({
+  onSelectNode,
+}: PlaygroundCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
   const { screenToFlowPosition } = useReactFlow();
@@ -112,6 +138,16 @@ export default function PlaygroundCanvas() {
       });
 
       const newNodeId = `${type}-${idCounter++}`;
+
+      const defaultConfig =
+        type === 'client'
+          ? { requestRate: 5, pattern: 'steady' }
+          : type === 'load_balancer'
+          ? { algorithm: 'round_robin', healthChecks: true }
+          : type === 'server'
+          ? { maxCapacity: 10, processingTimeMs: 200 }
+          : {};
+
       const newNode: Node<PlaygroundNodeData> = {
         id: newNodeId,
         type: 'playgroundNode',
@@ -121,6 +157,7 @@ export default function PlaygroundCanvas() {
           componentType: type,
           iconName: type,
           status: 'healthy',
+          config: defaultConfig,
         },
       };
 
@@ -128,6 +165,17 @@ export default function PlaygroundCanvas() {
     },
     [screenToFlowPosition, setNodes]
   );
+
+  const onNodeClick = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      onSelectNode(node as Node<PlaygroundNodeData>);
+    },
+    [onSelectNode]
+  );
+
+  const onPaneClick = useCallback(() => {
+    onSelectNode(null);
+  }, [onSelectNode]);
 
   return (
     <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--color-bg-base)' }} onDragOver={onDragOver} onDrop={onDrop}>
@@ -139,6 +187,8 @@ export default function PlaygroundCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeClick={onNodeClick}
+        onPaneClick={onPaneClick}
         fitView
       >
         <Background variant={BackgroundVariant.Dots} gap={24} size={1} color="var(--bg-grid-color)" />
