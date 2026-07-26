@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
   ReactFlow,
   Background,
@@ -12,12 +12,15 @@ import {
   Edge,
   useReactFlow,
   BackgroundVariant,
+  MarkerType,
 } from '@xyflow/react';
 import '@xyflow/react/dist/style.css';
 import PlaygroundNode from './customNodes/PlaygroundNode';
 import PlaygroundEdge from './customEdges/PlaygroundEdge';
 import { ComponentNodeType, PlaygroundNodeData } from './types';
 import { useSimulationLoop } from './engine/useSimulationLoop';
+import { validateConnection } from './utils/validation';
+import { AlertCircle } from 'lucide-react';
 
 const initialNodes: Node<PlaygroundNodeData>[] = [
   {
@@ -66,10 +69,17 @@ const initialNodes: Node<PlaygroundNodeData>[] = [
   },
 ];
 
+const defaultMarker = {
+  type: MarkerType.ArrowClosed,
+  color: 'var(--color-accent-primary)',
+  width: 14,
+  height: 14,
+};
+
 const initialEdges: Edge[] = [
-  { id: 'e-c1-lb1', source: 'client-1', target: 'lb-1', type: 'playgroundEdge' },
-  { id: 'e-lb1-s1', source: 'lb-1', target: 'server-1', type: 'playgroundEdge' },
-  { id: 'e-lb1-s2', source: 'lb-1', target: 'server-2', type: 'playgroundEdge' },
+  { id: 'e-c1-lb1', source: 'client-1', target: 'lb-1', type: 'playgroundEdge', markerEnd: defaultMarker },
+  { id: 'e-lb1-s1', source: 'lb-1', target: 'server-1', type: 'playgroundEdge', markerEnd: defaultMarker },
+  { id: 'e-lb1-s2', source: 'lb-1', target: 'server-2', type: 'playgroundEdge', markerEnd: defaultMarker },
 ];
 
 let idCounter = 1;
@@ -83,6 +93,7 @@ export default function PlaygroundCanvas({
 }: PlaygroundCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+  const [warningMsg, setWarningMsg] = useState<string | null>(null);
   const { screenToFlowPosition } = useReactFlow();
 
   // Run simulation tick loop
@@ -102,6 +113,18 @@ export default function PlaygroundCanvas({
     []
   );
 
+  const isValidConnection = useCallback(
+    (connection: Connection | Edge) => {
+      const result = validateConnection(connection, nodes);
+      if (!result.isValid && result.warning) {
+        setWarningMsg(result.warning);
+        setTimeout(() => setWarningMsg(null), 3500);
+      }
+      return result.isValid;
+    },
+    [nodes]
+  );
+
   const onConnect = useCallback(
     (params: Connection) =>
       setEdges((eds) =>
@@ -109,6 +132,7 @@ export default function PlaygroundCanvas({
           {
             ...params,
             type: 'playgroundEdge',
+            markerEnd: defaultMarker,
           },
           eds
         )
@@ -178,7 +202,35 @@ export default function PlaygroundCanvas({
   }, [onSelectNode]);
 
   return (
-    <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--color-bg-base)' }} onDragOver={onDragOver} onDrop={onDrop}>
+    <div style={{ width: '100%', height: '100%', backgroundColor: 'var(--color-bg-base)', position: 'relative' }} onDragOver={onDragOver} onDrop={onDrop}>
+      {/* Warning banner for invalid connection attempts */}
+      {warningMsg && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '12px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 30,
+            backgroundColor: 'var(--color-status-warning-bg)',
+            border: '1px solid var(--color-status-warning-border)',
+            color: 'var(--color-status-warning)',
+            padding: '0.4rem 1rem',
+            borderRadius: 'var(--radius-md)',
+            fontFamily: 'var(--font-heading)',
+            fontSize: 'var(--font-size-xs)',
+            fontWeight: 600,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            boxShadow: 'var(--shadow-md)',
+          }}
+        >
+          <AlertCircle size={16} />
+          {warningMsg}
+        </div>
+      )}
+
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -187,6 +239,7 @@ export default function PlaygroundCanvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        isValidConnection={isValidConnection}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
         fitView
