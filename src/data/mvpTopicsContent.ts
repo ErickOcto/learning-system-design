@@ -7,6 +7,7 @@ import MessagingVisualizer from '../components/visualizers/MessagingVisualizer';
 import CdnVisualizer from '../components/visualizers/CdnVisualizer';
 import ReplicationVisualizer from '../components/visualizers/ReplicationVisualizer';
 import CapTheoremVisualizer from '../components/visualizers/CapTheoremVisualizer';
+import ConsistencyVisualizer from '../components/visualizers/ConsistencyVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -309,8 +310,46 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
       whenNotToUse:
         'Do not design for AP eventual consistency in core accounting system ledgers where serving outdated balance data causes double-spending or financial loss.',
     },
-    relatedTopicIds: ['/availability/overview', '/availability/consistency-patterns', '/data/replication'],
+    relatedTopicIds: ['/availability/overview', '/availability/cap-theorem', '/data/replication'],
     Visualizer: CapTheoremVisualizer,
+  },
+
+  'consistency-patterns': {
+    topicId: 'consistency-patterns',
+    title: 'Consistency Patterns (Weak, Eventual & Strong)',
+    group: '2. Availability & Consistency',
+    explanation:
+      'Consistency patterns define the guarantees a distributed data store provides regarding when data writes become visible to subsequent reads. Weak consistency provides fire-and-forget execution with no guarantees; Eventual consistency converges background replicas after a transient stale read window; Strong consistency uses quorum mathematics (W + R > N) to eliminate stale reads at the cost of higher write latency.',
+    realWorldExamples: [
+      {
+        name: 'Memcached / Voip Audio (Weak)',
+        description: 'Fire-and-forget caching and real-time streaming where occasional lost updates or stale reads are ignored.',
+      },
+      {
+        name: 'Amazon DynamoDB / DNS (Eventual)',
+        description: 'Global asynchronous replication ensuring high write throughput while converging replicas over time.',
+      },
+      {
+        name: 'Spanner / CockroachDB Quorum (Strong)',
+        description: 'Strict quorum consensus (W + R > N) guaranteeing linearizable strong consistency for financial transactions.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Strong consistency eliminates stale reads and data corruption in transactional workloads',
+        'Eventual consistency provides maximum write throughput and low latency',
+        'Quorum configuration (W, R, N) allows precise tuning of read vs write latency priorities',
+      ],
+      cons: [
+        'Strong consistency increases write latency by requiring synchronous ACKs from W nodes',
+        'Eventual consistency exposes applications to race conditions during the convergence window',
+        'Weak consistency can cause permanent update loss if nodes crash before background sync',
+      ],
+      whenNotToUse:
+        'Do not use Weak or Eventual consistency for inventory reservation or banking software where stale reads cause negative balances or double-booked inventory.',
+    },
+    relatedTopicIds: ['/availability/cap-theorem', '/data/replication', '/availability/overview'],
+    Visualizer: ConsistencyVisualizer,
   },
 };
 

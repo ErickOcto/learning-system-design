@@ -29,7 +29,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including CDN, Replication, and CAP Theorem', () => {
+  it('contains authored text content for all MVP topics including Consistency Patterns', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -39,6 +39,7 @@ describe('Content Authoring: MVP Topics', () => {
       'cdn',
       'data-replication',
       'cap-theorem',
+      'consistency-patterns',
     ];
 
     mvpKeys.forEach((key) => {
@@ -114,5 +115,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/The CAP Theorem states that a distributed system cannot simultaneously/i)).toBeDefined();
     expect(screen.getByText('Apache Cassandra (AP)')).toBeDefined();
     expect(screen.getByText(/CP mode guarantees zero stale reads across nodes/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Consistency Patterns topic page', () => {
+    window.history.pushState({}, '', '/availability/consistency-patterns');
+    render(<App />);
+
+    expect(screen.getByText(/Consistency patterns define the guarantees a distributed data store provides/i)).toBeDefined();
+    expect(screen.getByText('Memcached / Voip Audio (Weak)')).toBeDefined();
+    expect(screen.getByText(/Strong consistency eliminates stale reads and data corruption/i)).toBeDefined();
   });
 });
