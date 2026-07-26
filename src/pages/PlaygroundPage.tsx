@@ -116,10 +116,10 @@ function PlaygroundPageContent() {
       <PlaygroundControlsBar />
 
       {/* Main Canvas Body */}
-      <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, position: 'relative', overflow: 'hidden', height: '100%', minHeight: '450px' }}>
         <PlaygroundPalette />
 
-        <div style={{ flex: 1, position: 'relative' }}>
+        <div style={{ flex: 1, position: 'relative', height: '100%', minHeight: '450px' }}>
           <PlaygroundCanvas
             onSelectNode={setSelectedNode}
             onNodesEdgesChange={handleNodesEdgesChange}

@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import { useTopicStore } from '../../store/useTopicStore';
 
 export default function AppLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
+  const location = useLocation();
   const loadAllTopics = useTopicStore((state) => state.loadAllTopics);
+
+  const isPlayground = location.pathname === '/playground';
 
   useEffect(() => {
     // Hydrate store from IndexedDB on initial mount
@@ -37,8 +40,8 @@ export default function AppLayout() {
         <main
           style={{
             flex: 1,
-            padding: 'var(--space-xl) var(--space-lg)',
-            maxWidth: '1200px',
+            padding: isPlayground ? 0 : 'var(--space-xl) var(--space-lg)',
+            maxWidth: isPlayground ? '100%' : '1200px',
             margin: '0 auto',
             width: '100%',
             transition: 'all var(--transition-fast)',
