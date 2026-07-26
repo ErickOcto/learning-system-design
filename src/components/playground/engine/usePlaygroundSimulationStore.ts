@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { SimulationEngineState, SimulationPacket, NodeMetrics } from './types';
-import { LoadBalancerAlgorithm, ClientPattern } from '../types';
+import { LoadBalancerAlgorithm, ClientPattern, DatabaseType } from '../types';
 
 let packetCounter = 1;
 let lastEmitTimestampMap: Record<string, number> = {};
@@ -68,8 +68,7 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
 
       let emitIntervalMs = 1000 / requestRate;
       if (pattern === 'bursty') {
-        // Sine wave modulation for bursty pattern
-        const sineMultiplier = Math.max(0.2, (Math.sin(now / 1000) + 1));
+        const sineMultiplier = Math.max(0.2, Math.sin(now / 1000) + 1);
         emitIntervalMs = emitIntervalMs / sineMultiplier;
       }
 
@@ -175,6 +174,76 @@ export const usePlaygroundSimulationStore = create<SimulationEngineState>((set, 
             nodeMetric.totalProcessed += 1;
           } else {
             // No healthy downstream target -> drop packet
+            nodeMetric.totalDropped += 1;
+            droppedIncrement += 1;
+          }
+        } else if (componentType === 'cache') {
+          // --- CACHE NODE LOGIC (Hit vs Miss) ---
+          const cacheConfig = targetNode.data?.config || {};
+          const hitRatio = cacheConfig.hitRatio ?? 70;
+          const isHit = Math.random() * 100 < hitRatio;
+
+          if (isTargetHealthy) {
+            if (isHit) {
+              // Cache Hit -> fast return
+              nodeMetric.totalProcessed += 1;
+              processedIncrement += 1;
+            } else {
+              // Cache Miss -> fall through to downstream target (Server/DB)
+              const outboundEdges = edges.filter((e) => e.source === targetNode.id);
+              if (outboundEdges.length > 0) {
+                const forwardEdge = outboundEdges[0];
+                updatedPackets.push({
+                  id: pkt.id,
+                  edgeId: forwardEdge.id,
+                  sourceNodeId: forwardEdge.source,
+                  targetNodeId: forwardEdge.target,
+                  progress: 0,
+                  speed: 0.7,
+                  status: 'in_flight',
+                  color: 'var(--color-status-warning)', // Amber for cache miss path
+                });
+                nodeMetric.totalProcessed += 1;
+              } else {
+                nodeMetric.totalProcessed += 1;
+                processedIncrement += 1;
+              }
+            }
+          } else {
+            nodeMetric.totalDropped += 1;
+            droppedIncrement += 1;
+          }
+        } else if (componentType === 'database') {
+          // --- DATABASE NODE LOGIC (Primary vs Replica) ---
+          const dbConfig = targetNode.data?.config || {};
+          const dbType: DatabaseType = dbConfig.dbType || 'primary';
+
+          if (isTargetHealthy) {
+            nodeMetric.totalProcessed += 1;
+            processedIncrement += 1;
+
+            if (dbType === 'primary') {
+              // Primary DB: Emit async replication packets to connected replica nodes
+              const replicaEdges = edges.filter((e) => {
+                if (e.source !== targetNode.id) return false;
+                const destNode = nodeMap.get(e.target);
+                return destNode && destNode.data?.componentType === 'database';
+              });
+
+              replicaEdges.forEach((edge) => {
+                updatedPackets.push({
+                  id: `repl-${packetCounter++}`,
+                  edgeId: edge.id,
+                  sourceNodeId: edge.source,
+                  targetNodeId: edge.target,
+                  progress: 0,
+                  speed: 0.5, // replication travels slower (replication lag)
+                  status: 'in_flight',
+                  color: 'var(--color-status-warning)', // Amber replication packets
+                });
+              });
+            }
+          } else {
             nodeMetric.totalDropped += 1;
             droppedIncrement += 1;
           }
