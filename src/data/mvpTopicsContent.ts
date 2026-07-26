@@ -4,6 +4,7 @@ import ScalingVisualizer from '../components/visualizers/ScalingVisualizer';
 import CachingVisualizer from '../components/visualizers/CachingVisualizer';
 import ShardingVisualizer from '../components/visualizers/ShardingVisualizer';
 import MessagingVisualizer from '../components/visualizers/MessagingVisualizer';
+import CdnVisualizer from '../components/visualizers/CdnVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -194,6 +195,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/messaging/load-leveling', '/messaging/background-jobs', '/architecture/microservices'],
     Visualizer: MessagingVisualizer,
+  },
+
+  'cdn': {
+    topicId: 'cdn',
+    title: 'Content Delivery Networks (CDN)',
+    group: '3. Networking & Delivery',
+    explanation:
+      'A Content Delivery Network (CDN) is a geographically distributed network of proxy servers and POP edge data centers. By caching static assets and dynamic responses near end users, CDNs dramatically reduce round-trip latency (RTT) and shield origin infrastructure from heavy traffic loads.',
+    realWorldExamples: [
+      {
+        name: 'Cloudflare Edge Network',
+        description: 'Global reverse proxy providing DDoS protection, static caching, and edge computing.',
+      },
+      {
+        name: 'AWS CloudFront',
+        description: 'Low-latency content delivery network seamlessly integrated with S3 origins.',
+      },
+      {
+        name: 'Fastly / Akamai',
+        description: 'High-performance edge caching platforms for real-time cache invalidation and video streaming.',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Dramatically reduces HTTP request latency by serving content from nearby POPs',
+        'Offloads bandwidth overhead and read traffic from origin databases & app servers',
+        'Improves global application availability during origin hardware outages',
+      ],
+      cons: [
+        'Cache invalidation and purge propagation across global POP nodes is notoriously difficult',
+        'Increases architecture complexity and third-party vendor operational costs',
+        'First request in a Pull CDN model suffers cold start latency',
+      ],
+      whenNotToUse:
+        'Avoid using heavy CDN caching layers for highly transactional, real-time user-personalized data APIs where every request must return immediately updated database state.',
+    },
+    relatedTopicIds: ['/caching/strategies', '/caching/layers', '/networking/load-balancers'],
+    Visualizer: CdnVisualizer,
   },
 };
 
