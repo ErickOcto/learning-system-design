@@ -26,42 +26,43 @@ interface GraphEdge {
 }
 
 export default function RoadmapGraph() {
-  const navigate = useNavigate();
-  const location = useLocation();
+  let navigateFn: ((path: string) => void) | null = null;
+  let currentPath = '';
+
+  try {
+    navigateFn = useNavigate();
+  } catch {
+    // router context guard
+  }
+
+  try {
+    const loc = useLocation();
+    if (loc) currentPath = loc.pathname;
+  } catch {
+    // router context guard
+  }
+
   const topicsStore = useTopicStore((state) => state.topics);
 
-  // Compute graph layout
   const nodes: GraphNode[] = [];
   const edges: GraphEdge[] = [];
 
-  const groupSpacingY = 160;
-  const startY = 60;
   const groupX = 140;
-  const topicStartX = 340;
-  const topicSpacingX = 160;
+  const topicX = 380;
+  const itemHeight = 38;
+  const groupGap = 40;
 
-  CURRICULUM_GROUPS.forEach((group, gIndex) => {
-    const gY = startY + gIndex * groupSpacingY;
+  let currentY = 50;
+
+  CURRICULUM_GROUPS.forEach((group) => {
     const groupId = `group-${group.id}`;
+    const firstTopicY = currentY;
 
-    // Add group hub node
-    nodes.push({
-      id: groupId,
-      title: group.title,
-      isGroup: true,
-      x: groupX,
-      y: gY,
-    });
-
-    // Add topic leaf nodes & connecting edges
-    group.routes.forEach((route: CurriculumRoute, rIndex: number) => {
-      const row = Math.floor(rIndex / 3);
-      const col = rIndex % 3;
-      const tX = topicStartX + col * topicSpacingX;
-      const tY = gY - 25 + row * 50;
-
+    // Add topic leaf nodes for this group
+    group.routes.forEach((route: CurriculumRoute) => {
       const topicRecord = topicsStore[route.id];
       const status = topicRecord?.status || 'not_started';
+      const tY = currentY;
 
       nodes.push({
         id: route.id,
@@ -69,17 +70,39 @@ export default function RoadmapGraph() {
         path: route.path,
         isGroup: false,
         status,
-        x: tX,
+        x: topicX,
         y: tY,
         parentId: groupId,
       });
 
-      edges.push({
-        id: `${groupId}->${route.id}`,
-        from: { x: groupX, y: gY },
-        to: { x: tX, y: tY },
-      });
+      currentY += itemHeight;
     });
+
+    const lastTopicY = currentY - itemHeight;
+    const groupCenterY = Math.round((firstTopicY + lastTopicY) / 2);
+
+    // Add group hub node
+    nodes.push({
+      id: groupId,
+      title: group.title,
+      isGroup: true,
+      x: groupX,
+      y: groupCenterY,
+    });
+
+    // Add connecting edges from group hub right-edge to each topic node
+    group.routes.forEach((route: CurriculumRoute) => {
+      const topicNode = nodes.find((n) => n.id === route.id);
+      if (topicNode) {
+        edges.push({
+          id: `${groupId}->${route.id}`,
+          from: { x: groupX + 90, y: groupCenterY },
+          to: { x: topicX, y: topicNode.y },
+        });
+      }
+    });
+
+    currentY += groupGap;
   });
 
   const getStatusColor = (status?: TopicStatus, isSelected?: boolean) => {
@@ -96,8 +119,17 @@ export default function RoadmapGraph() {
     }
   };
 
-  const width = 840;
-  const height = startY + CURRICULUM_GROUPS.length * groupSpacingY + 40;
+  const width = 760;
+  const height = currentY;
+
+  const handleNodeClick = (path?: string) => {
+    if (!path) return;
+    if (navigateFn) {
+      navigateFn(path);
+    } else {
+      window.location.href = path;
+    }
+  };
 
   return (
     <div
@@ -128,8 +160,8 @@ export default function RoadmapGraph() {
         <g className="graph-edges">
           {edges.map((edge) => {
             const dx = edge.to.x - edge.from.x;
-            const controlX1 = edge.from.x + dx * 0.5;
-            const controlX2 = edge.from.x + dx * 0.5;
+            const controlX1 = edge.from.x + dx * 0.4;
+            const controlX2 = edge.from.x + dx * 0.6;
             const d = `M ${edge.from.x} ${edge.from.y} C ${controlX1} ${edge.from.y}, ${controlX2} ${edge.to.y}, ${edge.to.x} ${edge.to.y}`;
 
             return (
@@ -152,9 +184,9 @@ export default function RoadmapGraph() {
               return (
                 <g key={node.id} transform={`translate(${node.x}, ${node.y})`}>
                   <rect
-                    x="-100"
+                    x="-90"
                     y="-18"
-                    width="200"
+                    width="180"
                     height="36"
                     rx="6"
                     fill="var(--color-bg-surface)"
@@ -166,7 +198,7 @@ export default function RoadmapGraph() {
                     y="4"
                     textAnchor="middle"
                     fill="var(--color-text-primary)"
-                    fontSize="12"
+                    fontSize="11"
                     fontWeight="600"
                     fontFamily="var(--font-heading)"
                   >
@@ -176,20 +208,20 @@ export default function RoadmapGraph() {
               );
             }
 
-            const isSelected = location.pathname === node.path;
+            const isSelected = currentPath === node.path;
             const nodeColor = getStatusColor(node.status, isSelected);
 
             return (
               <g
                 key={node.id}
                 transform={`translate(${node.x}, ${node.y})`}
-                onClick={() => node.path && navigate(node.path)}
+                onClick={() => handleNodeClick(node.path)}
                 style={{ cursor: 'pointer' }}
               >
                 {/* Outer halo if active */}
                 {isSelected && (
                   <circle
-                    r="16"
+                    r="14"
                     fill="none"
                     stroke="var(--color-accent-primary)"
                     strokeWidth="2"
@@ -200,7 +232,7 @@ export default function RoadmapGraph() {
 
                 {/* Node Circle */}
                 <circle
-                  r="10"
+                  r="8"
                   fill="var(--color-bg-surface)"
                   stroke={nodeColor}
                   strokeWidth="2.5"
@@ -211,8 +243,8 @@ export default function RoadmapGraph() {
                   x="16"
                   y="4"
                   textAnchor="start"
-                  fill={isSelected ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)'}
-                  fontSize="11"
+                  fill={isSelected ? 'var(--color-accent-primary)' : 'var(--color-text-primary)'}
+                  fontSize="12"
                   fontWeight={isSelected ? '600' : '400'}
                   fontFamily="var(--font-body)"
                 >

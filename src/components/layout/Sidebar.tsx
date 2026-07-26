@@ -58,9 +58,10 @@ export default function Sidebar({ isOpen, onCloseMobile }: SidebarProps) {
 
   return (
     <>
-      {/* Mobile backdrop overlay */}
+      {/* Mobile backdrop overlay (only visible on small screens < 768px) */}
       {isOpen && (
         <div
+          className="mobile-sidebar-backdrop"
           onClick={onCloseMobile}
           style={{
             position: 'fixed',
@@ -73,18 +74,22 @@ export default function Sidebar({ isOpen, onCloseMobile }: SidebarProps) {
 
       <aside
         style={{
-          width: '300px',
+          width: isOpen ? '300px' : '0px',
+          minWidth: isOpen ? '300px' : '0px',
           backgroundColor: 'var(--color-bg-surface)',
-          borderRight: '1px solid var(--color-border-subtle)',
+          borderRight: isOpen ? '1px solid var(--color-border-subtle)' : 'none',
           display: 'flex',
           flexDirection: 'column',
           height: 'calc(100vh - 60px)',
           position: 'sticky',
           top: '60px',
           overflowY: 'auto',
+          overflowX: 'hidden',
           zIndex: 50,
-          transition: 'transform var(--transition-fast)',
+          transition: 'all var(--transition-fast)',
           transform: isOpen ? 'translateX(0)' : 'translateX(-100%)',
+          opacity: isOpen ? 1 : 0,
+          pointerEvents: isOpen ? 'auto' : 'none',
         }}
       >
         {/* Header & View Mode Switcher */}

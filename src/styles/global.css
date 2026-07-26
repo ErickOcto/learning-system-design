@@ -64,3 +64,14 @@ code, kbd, samp, pre {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-text-muted);
 }
+
+/* Mobile Sidebar Backdrop */
+.mobile-sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 767px) {
+  .mobile-sidebar-backdrop {
+    display: block;
+  }
+}
