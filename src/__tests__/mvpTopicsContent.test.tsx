@@ -31,7 +31,7 @@ describe('Content Authoring: MVP Topics', () => {
     cleanup();
   });
 
-  it('contains authored text content for all MVP topics including Load Leveling', () => {
+  it('contains authored text content for all MVP topics including Rate Limiting Resiliency', () => {
     const mvpKeys = [
       'scaling',
       'load-balancers',
@@ -43,6 +43,7 @@ describe('Content Authoring: MVP Topics', () => {
       'cap-theorem',
       'consistency-patterns',
       'load-leveling',
+      'resiliency',
     ];
 
     mvpKeys.forEach((key) => {
@@ -136,5 +137,14 @@ describe('Content Authoring: MVP Topics', () => {
     expect(screen.getByText(/Queue-based load leveling places a message buffer between an unpredictable/i)).toBeDefined();
     expect(screen.getByText('AWS SQS + Lambda / Worker Pool')).toBeDefined();
     expect(screen.getByText(/Shields fragile downstream databases and microservices from 100% CPU crashes/i)).toBeDefined();
+  });
+
+  it('renders complete 6-section layout for Rate Limiting Resiliency topic page', () => {
+    window.history.pushState({}, '', '/availability/resiliency');
+    render(<App />);
+
+    expect(screen.getByText(/Rate limiting and throttling algorithms like Token Bucket control the rate/i)).toBeDefined();
+    expect(screen.getByText('Stripe API Rate Limiter')).toBeDefined();
+    expect(screen.getByText(/Guarantees hard upper limits on incoming request rates/i)).toBeDefined();
   });
 });

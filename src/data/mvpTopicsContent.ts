@@ -9,6 +9,7 @@ import ReplicationVisualizer from '../components/visualizers/ReplicationVisualiz
 import CapTheoremVisualizer from '../components/visualizers/CapTheoremVisualizer';
 import ConsistencyVisualizer from '../components/visualizers/ConsistencyVisualizer';
 import LoadLevelingVisualizer from '../components/visualizers/LoadLevelingVisualizer';
+import TokenBucketVisualizer from '../components/visualizers/TokenBucketVisualizer';
 
 export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
   'scaling': {
@@ -389,6 +390,44 @@ export const MVP_TOPICS_CONTENT: Record<string, TopicPageProps> = {
     },
     relatedTopicIds: ['/messaging/queues-pubsub', '/messaging/background-jobs', '/availability/resiliency'],
     Visualizer: LoadLevelingVisualizer,
+  },
+
+  'resiliency': {
+    topicId: 'resiliency',
+    title: 'Circuit Breaker & Rate Limiting (Token Bucket)',
+    group: '2. Availability & Consistency',
+    explanation:
+      'Rate limiting and throttling algorithms like Token Bucket control the rate of traffic sent to or received by a network service. A Token Bucket holds a maximum capacity of tokens refilled at a constant rate. Each incoming API request consumes a token; if the bucket is empty, requests are instantly rejected with HTTP 429 Too Many Requests, protecting backend servers from denial-of-service degradation.',
+    realWorldExamples: [
+      {
+        name: 'Stripe API Rate Limiter',
+        description: 'Redis-backed token bucket rate limiting providing per-merchant API key quotas.',
+      },
+      {
+        name: 'NGINX limit_req module',
+        description: 'Leaky bucket / Token bucket HTTP request throttling per IP address.',
+      },
+      {
+        name: 'AWS API Gateway Throttling',
+        description: 'Account-level and route-level token bucket throttling (Default: 10,000 RPS burst).',
+      },
+    ],
+    tradeoffs: {
+      pros: [
+        'Guarantees hard upper limits on incoming request rates to protect backend infrastructure',
+        'Allows temporary burst traffic up to full bucket capacity while maintaining long-term rate limits',
+        'Provides instant HTTP 429 feedback to abusive or runaway clients',
+      ],
+      cons: [
+        'Legitimate users experience 429 error rejections during unexpected traffic bursts',
+        'Requires distributed synchronization (e.g. Redis Lua scripts) in multi-region API gateways',
+        'Improperly configured bucket capacity can cause false-positive throttling',
+      ],
+      whenNotToUse:
+        'Do not place aggressive rate limiters in front of critical internal microservice RPC calls where a 429 rejection causes cascading failures across the entire system.',
+    },
+    relatedTopicIds: ['/availability/overview', '/availability/nines', '/messaging/load-leveling'],
+    Visualizer: TokenBucketVisualizer,
   },
 };
 
