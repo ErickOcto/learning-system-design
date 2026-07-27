@@ -7,6 +7,7 @@ import {
   useNodesState,
   useEdgesState,
   addEdge,
+  reconnectEdge,
   Connection,
   Node,
   Edge,
@@ -21,6 +22,13 @@ import { ComponentNodeType, PlaygroundNodeData } from './types';
 import { useSimulationLoop } from './engine/useSimulationLoop';
 import { validateConnection } from './utils/validation';
 import { AlertCircle } from 'lucide-react';
+
+const defaultMarker = {
+  type: MarkerType.ArrowClosed,
+  color: 'var(--color-border-strong)',
+  width: 16,
+  height: 16,
+};
 
 const initialNodes: Node<PlaygroundNodeData>[] = [
   {
@@ -68,13 +76,6 @@ const initialNodes: Node<PlaygroundNodeData>[] = [
     },
   },
 ];
-
-const defaultMarker = {
-  type: MarkerType.ArrowClosed,
-  color: 'var(--color-accent-primary)',
-  width: 14,
-  height: 14,
-};
 
 const initialEdges: Edge[] = [
   { id: 'e-c1-lb1', source: 'client-1', target: 'lb-1', type: 'playgroundEdge', markerEnd: defaultMarker },
@@ -181,6 +182,12 @@ export default function PlaygroundCanvas({
     [setEdges]
   );
 
+  const onReconnect = useCallback(
+    (oldEdge: Edge, newConnection: Connection) =>
+      setEdges((els) => reconnectEdge(oldEdge, newConnection, els)),
+    [setEdges]
+  );
+
   const onDragOver = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     event.dataTransfer.dropEffect = 'move';
@@ -279,6 +286,8 @@ export default function PlaygroundCanvas({
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onReconnect={onReconnect}
+        edgesReconnectable={true}
         isValidConnection={isValidConnection}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}

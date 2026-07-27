@@ -1,5 +1,5 @@
 import { useRef, useMemo } from 'react';
-import { BaseEdge, EdgeProps, getBezierPath, EdgeLabelRenderer } from '@xyflow/react';
+import { BaseEdge, EdgeProps, getBezierPath, EdgeLabelRenderer, useReactFlow } from '@xyflow/react';
 import { usePlaygroundSimulationStore } from '../engine/usePlaygroundSimulationStore';
 
 export default function PlaygroundEdge(props: EdgeProps) {
@@ -13,9 +13,11 @@ export default function PlaygroundEdge(props: EdgeProps) {
     targetPosition,
     style,
     markerEnd,
+    selected,
   } = props;
 
   const pathRef = useRef<SVGPathElement>(null);
+  const { setEdges } = useReactFlow();
 
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -27,7 +29,6 @@ export default function PlaygroundEdge(props: EdgeProps) {
   });
 
   const allPackets = usePlaygroundSimulationStore((s) => s.packets);
-  const isPlaying = usePlaygroundSimulationStore((s) => s.isPlaying);
 
   const packets = useMemo(
     () => allPackets.filter((p) => p.edgeId === id),
@@ -36,14 +37,23 @@ export default function PlaygroundEdge(props: EdgeProps) {
 
   const pathLength = pathRef.current?.getTotalLength() || 0;
 
+  const handleDeleteEdge = (evt: React.MouseEvent) => {
+    evt.stopPropagation();
+    setEdges((edges) => edges.filter((e) => e.id !== id));
+  };
+
   return (
     <>
       <BaseEdge
         path={edgePath}
         markerEnd={markerEnd}
         style={{
-          stroke: packets.length > 0 ? 'var(--color-accent-primary)' : 'var(--color-border-strong)',
-          strokeWidth: packets.length > 0 ? 2.5 : 1.5,
+          stroke: selected
+            ? 'var(--color-accent-primary)'
+            : packets.length > 0
+            ? 'var(--color-accent-primary)'
+            : 'var(--color-border-strong)',
+          strokeWidth: selected ? 3 : packets.length > 0 ? 2.5 : 1.5,
           opacity: 0.85,
           transition: 'stroke 0.2s, stroke-width 0.2s',
           ...style,
@@ -84,34 +94,50 @@ export default function PlaygroundEdge(props: EdgeProps) {
           );
         })}
 
-      {/* Edge Live Telemetry Badge (In-Flight Count) */}
-      {(isPlaying || packets.length > 0) && (
-        <EdgeLabelRenderer>
-          <div
+      {/* Edge Live Telemetry & Delete Button Badge */}
+      <EdgeLabelRenderer>
+        <div
+          style={{
+            position: 'absolute',
+            transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
+            fontSize: '10px',
+            fontFamily: 'var(--font-mono)',
+            fontWeight: 600,
+            backgroundColor: 'var(--color-bg-surface)',
+            border: selected ? '1px solid var(--color-accent-primary)' : '1px solid var(--color-border-subtle)',
+            color: packets.length > 0 ? 'var(--color-accent-primary)' : 'var(--color-text-secondary)',
+            padding: '2px 6px',
+            borderRadius: 'var(--radius-sm)',
+            pointerEvents: 'all',
+            zIndex: 10,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '4px',
+            boxShadow: 'var(--shadow-sm)',
+          }}
+        >
+          {packets.length > 0 && <span>⚡ {packets.length}</span>}
+          <button
+            onClick={handleDeleteEdge}
+            title="Unattach / Delete Connection"
             style={{
-              position: 'absolute',
-              transform: `translate(-50%, -50%) translate(${labelX}px,${labelY}px)`,
-              fontSize: '10px',
-              fontFamily: 'var(--font-mono)',
-              fontWeight: 600,
-              backgroundColor: 'var(--color-bg-surface)',
-              border: '1px solid var(--color-border-subtle)',
-              color: packets.length > 0 ? 'var(--color-accent-primary)' : 'var(--color-text-muted)',
-              padding: '1px 5px',
-              borderRadius: 'var(--radius-sm)',
-              pointerEvents: 'none',
-              zIndex: 10,
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-status-error)',
+              cursor: 'pointer',
+              fontSize: '13px',
+              fontWeight: 700,
+              lineHeight: 1,
+              padding: '0 2px',
               display: 'flex',
               alignItems: 'center',
-              gap: '3px',
-              boxShadow: 'var(--shadow-sm)',
+              justifyContent: 'center',
             }}
           >
-            <span>⚡</span>
-            <span>{packets.length}</span>
-          </div>
-        </EdgeLabelRenderer>
-      )}
+            ×
+          </button>
+        </div>
+      </EdgeLabelRenderer>
     </>
   );
 }
