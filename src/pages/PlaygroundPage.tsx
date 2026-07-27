@@ -14,6 +14,7 @@ function PlaygroundPageContent() {
   const [currentNodes, setCurrentNodes] = useState<any[]>([]);
   const [currentEdges, setCurrentEdges] = useState<any[]>([]);
   const [loadedGraph, setLoadedGraph] = useState<{ nodes: any[]; edges: any[] } | null>(null);
+  const [updatedNodeData, setUpdatedNodeData] = useState<{ id: string; data: Partial<PlaygroundNodeData>; timestamp: number } | null>(null);
 
   const handleUpdateNodeData = (nodeId: string, newData: Partial<PlaygroundNodeData>) => {
     setSelectedNode((prev) => {
@@ -26,6 +27,7 @@ function PlaygroundPageContent() {
         },
       };
     });
+    setUpdatedNodeData({ id: nodeId, data: newData, timestamp: Date.now() });
   };
 
   const handleNodesEdgesChange = (nodes: any[], edges: any[]) => {
@@ -124,6 +126,7 @@ function PlaygroundPageContent() {
             onSelectNode={setSelectedNode}
             onNodesEdgesChange={handleNodesEdgesChange}
             loadedGraph={loadedGraph}
+            updatedNodeData={updatedNodeData}
           />
         </div>
 

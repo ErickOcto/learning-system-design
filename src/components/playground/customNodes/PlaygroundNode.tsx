@@ -47,6 +47,28 @@ export default function PlaygroundNode({ data, selected }: PlaygroundNodeProps) 
       ? 'var(--color-status-warning)'
       : 'var(--color-status-error)';
 
+  const getConfigSummary = () => {
+    const config = (data.config || {}) as Record<string, any>;
+    switch (data.componentType) {
+      case 'client':
+        return `${config.requestRate ?? 5} req/s`;
+      case 'server':
+        return `Cap: ${config.maxCapacity ?? 10} | ${config.processingTimeMs ?? 200}ms`;
+      case 'load_balancer':
+        return `${(config.algorithm || 'round_robin').replace('_', ' ')}`;
+      case 'rate_limiter':
+        return `${config.refillRate ?? 5}/s (Max ${config.bucketSize ?? 10})`;
+      case 'message_queue':
+        return `Buf: ${config.bufferLimit ?? 100}`;
+      case 'cache':
+        return `Policy: ${(config.evictionPolicy || 'lru').toUpperCase()}`;
+      default:
+        return null;
+    }
+  };
+
+  const configSummary = getConfigSummary();
+
   return (
     <div
       style={{
@@ -59,7 +81,7 @@ export default function PlaygroundNode({ data, selected }: PlaygroundNodeProps) 
         boxShadow: selected
           ? '0 0 12px var(--color-accent-glow)'
           : 'var(--shadow-sm)',
-        minWidth: '150px',
+        minWidth: '160px',
         transition: 'all var(--transition-fast)',
         userSelect: 'none',
       }}
@@ -118,13 +140,14 @@ export default function PlaygroundNode({ data, selected }: PlaygroundNodeProps) 
           <div
             style={{
               fontFamily: 'var(--font-mono)',
-              fontSize: '10px',
-              color: 'var(--color-text-muted)',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em',
+              fontSize: '9px',
+              color: 'var(--color-accent-primary)',
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
             }}
           >
-            {data.componentType.replace('_', ' ')}
+            {configSummary || data.componentType.replace('_', ' ')}
           </div>
         </div>
 

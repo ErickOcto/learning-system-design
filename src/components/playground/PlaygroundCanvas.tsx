@@ -88,12 +88,14 @@ interface PlaygroundCanvasProps {
   onSelectNode: (node: Node<PlaygroundNodeData> | null) => void;
   onNodesEdgesChange?: (nodes: any[], edges: any[]) => void;
   loadedGraph?: { nodes: any[]; edges: any[] } | null;
+  updatedNodeData?: { id: string; data: Partial<PlaygroundNodeData>; timestamp: number } | null;
 }
 
 export default function PlaygroundCanvas({
   onSelectNode,
   onNodesEdgesChange,
   loadedGraph,
+  updatedNodeData,
 }: PlaygroundCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
@@ -107,6 +109,26 @@ export default function PlaygroundCanvas({
       setEdges(loadedGraph.edges || []);
     }
   }, [loadedGraph, setNodes, setEdges]);
+
+  // Handle node configuration updates from PlaygroundConfigDrawer
+  useEffect(() => {
+    if (updatedNodeData) {
+      setNodes((nds) =>
+        nds.map((n) => {
+          if (n.id === updatedNodeData.id) {
+            return {
+              ...n,
+              data: {
+                ...n.data,
+                ...updatedNodeData.data,
+              },
+            };
+          }
+          return n;
+        })
+      );
+    }
+  }, [updatedNodeData, setNodes]);
 
   // Sync current nodes & edges with parent page for persistence
   useEffect(() => {
